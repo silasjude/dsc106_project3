@@ -1,0 +1,56 @@
+{
+ "bbox": [
+  -75,
+  -18,
+  -45,
+  2
+ ],
+ "deg": 0.05,
+ "width": 600,
+ "height": 400,
+ "years": [
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022
+ ],
+ "months": [
+  7,
+  8,
+  9
+ ],
+ "ndvi": {
+  "file": "ndvi.bin.gz",
+  "dtype": "uint8",
+  "scale": 250,
+  "offset": 0,
+  "nodata": 255,
+  "layer": "MODIS_Terra_L3_NDVI_Monthly"
+ },
+ "lst": {
+  "file": "lst.bin.gz",
+  "dtype": "uint16",
+  "scale": 100,
+  "offset": 50,
+  "nodata": 65535,
+  "layer": "MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day"
+ }
+}

@@ -1,11 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Where the Amazon was cleared, the ground got hotter</title>
+  <meta name="description" content="An interactive look at 22 years of NASA MODIS vegetation and land surface temperature data over the southern Amazon.">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+  <header class="page-head">
+    <p class="kicker">DSC 106 · Project 3 · Team 11</p>
+    <h1>Where the Amazon was cleared, the ground got hotter</h1>
+    <p class="lede">
+      Does cutting down rainforest change the temperature of the land underneath it? Two NASA MODIS
+      measurements, vegetation greenness (NDVI) and daytime land surface temperature (LST), let you check
+      for yourself, 5&nbsp;km at a time, from 2001 to 2022.
+    </p>
+    <p class="byline">Silas Jude, Ethan Lam, Mcallister Blair, Rami Abukhater</p>
+  </header>
+
+  <main>
+    <section class="howto" aria-label="How to use this graphic">
+      <span><b>Drag on the map</b> to pick an area.</span>
+      <span><b>Drag across the scatter plot</b> to light up matching places on the map.</span>
+      <span><b>Move the year slider</b> or press play to watch the change build up.</span>
+      <span><b>Hover</b> anywhere for exact values.</span>
+    </section>
+
+    <section class="controls" aria-label="Controls">
+      <div class="control">
+        <span class="control-label">Map shows</span>
+        <div class="segmented" role="group" aria-label="Measure shown on the map">
+          <button type="button" data-measure="ndvi" class="active" aria-pressed="true">Greenness change</button>
+          <button type="button" data-measure="lst" aria-pressed="false">Temperature change</button>
+        </div>
+      </div>
+      <div class="control control-year">
+        <label class="control-label" for="year">Compare 2001–03 with <output id="year-out">2020–22</output></label>
+        <div class="year-row">
+          <button type="button" id="play" aria-label="Play through the years">▶ Play</button>
+          <input type="range" id="year" min="2006" max="2022" step="1" value="2022">
+        </div>
+      </div>
+      <div class="control">
+        <span class="control-label">Jump to an area</span>
+        <div class="presets" id="presets"></div>
+      </div>
+    </section>
+
+    <p id="loading" class="loading">Loading 22 years of satellite data…</p>
+
+    <div class="viz" id="viz" hidden>
+      <figure class="panel map-panel">
+        <figcaption>
+          <h2 id="map-title">Change in dry-season greenness</h2>
+          <p class="sub" id="map-sub"></p>
+        </figcaption>
+        <div class="map-wrap" id="map-wrap">
+          <canvas id="map-canvas" width="600" height="400"></canvas>
+          <svg id="map-svg" viewBox="0 0 600 400" preserveAspectRatio="none" role="img"
+               aria-label="Map of the southern Amazon coloured by change since 2001 to 2003"></svg>
+        </div>
+        <div class="legend-row">
+          <svg id="map-legend" viewBox="0 0 330 46" width="330" height="46" aria-hidden="true"></svg>
+          <ul class="swatches">
+            <li><i class="sw sw-faded"></i>Faded: not dense forest in 2001–03 (left out of the charts)</li>
+            <li><i class="sw sw-nodata"></i>Water, cloud or no data</li>
+          </ul>
+        </div>
+      </figure>
+
+      <div class="side">
+        <p class="readout" id="readout" aria-live="polite"></p>
+
+        <figure class="panel">
+          <figcaption>
+            <h2>Less green means hotter</h2>
+            <p class="sub" id="scatter-sub"></p>
+          </figcaption>
+          <svg id="scatter" viewBox="0 0 470 330" role="img"
+               aria-label="Binned scatter plot of greenness change against temperature change"></svg>
+          <p class="note" id="scatter-note"></p>
+        </figure>
+
+        <figure class="panel">
+          <figcaption>
+            <h2>The gap opens as the forest goes</h2>
+            <p class="sub" id="line-sub"></p>
+          </figcaption>
+          <svg id="lines" viewBox="0 0 470 250" role="img"
+               aria-label="Line chart of yearly temperature change for cleared and intact forest"></svg>
+          <p class="note">Click or drag on this chart to move the year.</p>
+        </figure>
+      </div>
+    </div>
+
+    <div id="tooltip" class="tooltip" hidden></div>
+
+    <p class="source">
+      Data: NASA MODIS (Terra) monthly NDVI and daytime land surface temperature, read through the
+      <a href="https://nasa-gibs.github.io/gibs-api-docs/access-basics/">NASA GIBS</a> API.
+      Each year is the median of July, August and September. Borders: Natural Earth.
+      The steps are in <a href="https://github.com/silasjude/dsc106_project3/blob/main/scripts/build_data.py">scripts/build_data.py</a>.
+    </p>
+
+    <article class="writeup" id="writeup">
+      <h2>What to look for</h2>
+      <p>
+        Start with the whole map and flip between <em>Greenness change</em> and <em>Temperature change</em>.
+        The brown arc along the southern and eastern edge of the forest (Rondônia, northern Mato Grosso,
+        Pará) is the same shape as the red arc on the temperature map. Then drag across the left side of the
+        scatter plot, where greenness fell the most. The map keeps only those cells, and with the temperature
+        map switched on almost all of them are red. Last, jump to <em>Intact interior</em>: the scatter
+        collapses to a small blob near zero. Forest that was left alone barely moved on either axis, which is
+        why we read the warming as a result of clearing and not of the whole region heating up.
+      </p>
+
+      <h2>Design rationale</h2>
+
+      <h3>The question and the data</h3>
+      <p>
+        Our checkpoint question was whether deforestation in the Amazon shows up as a temperature change.
+        We use two monthly MODIS Terra products from NASA GIBS: NDVI, which measures how green the surface is,
+        and daytime land surface temperature. The map covers 75°W–45°W and 18°S–2°N on a 0.05° grid
+        (about 5.5&nbsp;km), which is the native grid of the temperature product. That is 240,000 cells for each of 22 years.
+      </p>
+
+      <h3>Transformations</h3>
+      <ul>
+        <li><b>Dry season only.</b> Each year is the median of July, August and September. Forest stays green
+          in the dry season and pasture dries out, so the contrast is largest then. The wet season is also too
+          cloudy to give usable data. A median of three months survives one bad month.</li>
+        <li><b>Change, not level.</b> Every view shows the difference from a 2001–03 baseline. Raw temperature
+          is dominated by elevation and latitude (the Andes are cold whatever happens to the forest), and
+          subtracting each cell's own baseline removes that.</li>
+        <li><b>Three-year windows.</b> The map and scatter average the three years ending at the slider year.
+          Single years swing a lot with drought and smoke. The line chart is the one place that keeps single
+          years, so the noise is visible and not hidden.</li>
+        <li><b>Forest filter.</b> The charts only count cells that were dense forest at the start
+          (baseline dry-season NDVI of 0.7 or more). Without this, the savanna and farmland south of the forest
+          mix a different story into the scatter. Those cells are still on the map, faded, so nothing disappears silently.</li>
+        <li><b>“Cleared” and “stayed forest”.</b> A cell counts as cleared if its NDVI dropped by 0.2 or more by
+          2020–22, and as intact if it moved by less than 0.05. The 0.2 cut-off comes from our exploration
+          notebook: in a remote control region almost no cells fall that far, so it sits outside normal noise.</li>
+        <li><b>Stopping at 2022.</b> Terra's orbit has been drifting since then, so it passes over later in the
+          day and its temperatures are no longer comparable. Our checkpoint plot of the Sahara showed the same
+          artificial drop after 2023, so we cut the series there.</li>
+      </ul>
+
+      <h3>Visual encodings</h3>
+      <ul>
+        <li><b>Map: position for place, diverging colour for change.</b> Change has a direction and a
+          meaningful zero, so both measures use a two-ended colour scale with a pale middle. Greenness runs
+          brown to teal and temperature runs blue to red. Both are standard ColorBrewer schemes that stay
+          readable with colour-blindness, and we kept them different so it is always obvious which measure is
+          showing. Missing data is a flat grey that appears on neither scale, so it cannot be read as “no change”.</li>
+        <li><b>Scatter: position for both variables.</b> The relationship between the two measures is the
+          actual answer to the question, so it gets the most accurate channel on both axes. With more than
+          150,000 forest cells a plain scatter is a solid blob, so we bin the cells into a grid and colour each
+          rectangle by how many cells fall in it, on a log scale so the sparse tail of heavily cleared cells
+          is still visible next to the huge pile of unchanged ones. The black line is the median temperature
+          change in each 0.05-wide slice of greenness change. It is there because the eye is bad at judging
+          a trend from density alone.</li>
+        <li><b>Lines: a shared baseline.</b> Both groups are plotted as change from their own 2001–03 average,
+          so they start together at zero and the reader only has to watch the gap. The two lines are labelled
+          directly at their ends, and orange against blue is safe for red-green colour-blindness.</li>
+      </ul>
+
+      <h3>Interactions</h3>
+      <ul>
+        <li><b>Brushing the map</b> filters both charts to that area. This is what lets you test the claim
+          locally: a clearing frontier and an untouched block give visibly different scatters, which a single
+          static scatter of the whole basin would average away.</li>
+        <li><b>Brushing the scatter</b> goes the other way and shows <em>where</em> a part of the distribution
+          lives. This is the interaction we think earns its place the most. A static figure can show that
+          greenness loss and warming are correlated, but not that the cells in the top-left corner are all on
+          the roads through Rondônia and Pará.</li>
+        <li><b>The year slider and play button</b> show the order of events: the brown arc spreads first along
+          the highways, and the scatter's tail stretches up and to the left as it does.</li>
+        <li><b>The measure toggle</b> swaps the map between the two variables without changing anything else,
+          so the eye can compare the same place.</li>
+        <li><b>Hovering</b> gives the real numbers for one cell and marks it on the scatter, which ties one
+          place on the ground to one point in the cloud.</li>
+      </ul>
+
+      <h3>Alternatives we considered</h3>
+      <ul>
+        <li><b>Two maps side by side</b> instead of a toggle. This is what our checkpoint figure did. It makes
+          the patterns easy to compare at a glance, but each map ends up half the size, and the comparison it
+          supports is done more precisely by the scatter. We kept one large map.</li>
+        <li><b>A bivariate colour map</b> that mixes both measures into one colour. It needs a nine-colour
+          legend that most readers cannot decode, so we dropped it.</li>
+        <li><b>Pan and zoom on the map.</b> We left it out. At 5&nbsp;km per cell there is no extra
+          detail to zoom into, and dragging to pan would compete with dragging to select. The area presets
+          cover the same need.</li>
+        <li><b>Hexagonal bins</b>, as in our exploration plot. Rectangles line up with the axis ticks and with
+          the brush edges, which makes “everything left of −0.2” an exact selection.</li>
+        <li><b>A “year the forest was cleared” map</b> from the exploration notebook. It is a good figure, but
+          it answers <em>when</em>, not <em>what happened to temperature</em>, so it would have been a second project.</li>
+      </ul>
+
+      <h3>Limits</h3>
+      <p>
+        A drop in NDVI is a sign of clearing, not proof. Fire and drought lower it too. Cells are 5&nbsp;km wide,
+        so small clearings are diluted. NDVI values from GIBS arrive already rounded into colour-map bins, so
+        differences under about 0.01 mean nothing. Temperature arrives the same way, in steps of 0.6&nbsp;°C, which is fine for a 4&nbsp;°C signal but not for fine detail. And the temperature is the temperature of the surface at
+        about 10:30 in the morning, not the air temperature a weather station would report.
+      </p>
+
+      <h2>Development process</h2>
+      <p>
+        We split the work by stage. Ethan wrote the first exploration notebook, including the code that turns
+        GIBS images back into numbers, which everything after it reuses. Silas produced the global exploratory
+        figures and set up the repository and the GitHub Pages site. Mcallister wrote the deforestation notebook
+        that narrowed the topic to the Amazon and found the NDVI and temperature relationship. Rami built the
+        data pipeline for the web page and the interactive graphic itself.
+      </p>
+      <p id="hours">
+        <mark>[Team: fill in before submitting. Roughly how many people-hours we spent in total, and anything
+        to correct in the split above.]</mark>
+      </p>
+      <p>
+        The part that took longest was not drawing anything. It was getting trustworthy numbers out of the
+        data: GIBS serves images, so each pixel colour has to be matched back to a value, and we had to find
+        out the hard way that temperatures after 2022 are not comparable. In the interactive itself, most of
+        the time went into the two-way link between the map and the scatter, and into keeping 240,000 cells
+        redrawing smoothly while a brush is being dragged, which is why the map is drawn on a canvas and only
+        the overlays are SVG.
+      </p>
+    </article>
+  </main>
+
+  <script type="module" src="main.js"></script>
 </body>
 </html>
