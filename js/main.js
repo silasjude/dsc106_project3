@@ -1,4 +1,4 @@
-/* The Heat Left Behind — DSC 106 Project 3, Team 11
+/* Exploring vegetation and temperature changes in the Amazon — DSC 106 Project 3, Team 11
  * D3 v7 only. Data files are built by prep/build_data.py (see README).
  *
  * Layout of this file
@@ -66,6 +66,7 @@
     all: { name: 'Whole map', box: null },
     rondonia: { name: 'Rondônia', box: META.regions.rondonia.bbox, color: 'var(--c-rondonia)', hex: '#2a78d6' },
     para: { name: 'Pará (BR-163)', box: META.regions.para.bbox, color: 'var(--c-para)', hex: '#eb6834' },
+    matogrosso: { name: 'Northern Mato Grosso', box: [-58, -13, -52, -9.5], color: 'var(--c-matogrosso)', hex: '#7b3fc4' },
     control: { name: 'Intact forest (control)', box: META.regions.control.bbox, color: 'var(--c-control)', hex: '#6f6d68' },
   };
   // lon/lat box → cell index box [i0, j0, i1, j1) (exclusive ends)
@@ -152,12 +153,13 @@
 
   // ---------------------------------------------------------------- color scales
   const NDVI_DOM = 0.3, LST_DOM = 5;
-  const NODATA_RGB = [201, 199, 189], UNCLEARED_RGB = [240, 239, 236], FADE_RGB = [228, 226, 219];
+  const NODATA_RGB = [38, 43, 39], UNCLEARED_RGB = [47, 62, 50], FADE_RGB = [24, 29, 25];
   const rgbOf = (c) => { const o = d3.rgb(c); return [o.r, o.g, o.b]; };
   const LUT = (interp) => d3.range(256).map((i) => rgbOf(interp(i / 255)));
   const lutNDVI = LUT(d3.interpolateBrBG);
   const lutLST = LUT((t) => d3.interpolateRdBu(1 - t));
-  const yearColor = d3.scaleSequential((t) => d3.interpolateYlOrBr(0.22 + 0.78 * t)).domain([2004, 2022]);
+  // on the dark page the newest clearing is the brightest: deep orange (2004) to pale yellow (2022)
+  const yearColor = d3.scaleSequential((t) => d3.interpolateYlOrBr(0.78 - 0.7 * t)).domain([2004, 2022]);
   const lutIndex = (v, dom) => Math.max(0, Math.min(255, Math.round(((v + dom) / (2 * dom)) * 255)));
   const colorNDVI = (v) => d3.interpolateBrBG(Math.max(0, Math.min(1, (v + NDVI_DOM) / (2 * NDVI_DOM))));
   const colorLST = (v) => d3.interpolateRdBu(1 - Math.max(0, Math.min(1, (v + LST_DOM) / (2 * LST_DOM))));
@@ -187,12 +189,14 @@
         rgb = c !== 0 && c !== 255 && c + 2000 <= state.year ? yearRGB[c] : UNCLEARED_RGB;
       }
       if (f && baseN[k] !== 255 && !inFilter(k)) {
-        rgb = [rgb[0] * 0.15 + FADE_RGB[0] * 0.85, rgb[1] * 0.15 + FADE_RGB[1] * 0.85, rgb[2] * 0.15 + FADE_RGB[2] * 0.85];
+        rgb = [rgb[0] * 0.1 + FADE_RGB[0] * 0.9, rgb[1] * 0.1 + FADE_RGB[1] * 0.9, rgb[2] * 0.1 + FADE_RGB[2] * 0.9];
       }
       const o = k * 4;
       d[o] = rgb[0]; d[o + 1] = rgb[1]; d[o + 2] = rgb[2]; d[o + 3] = 255;
     }
     ctx.putImageData(img, 0, 0);
+    // labels and borders switch to light-on-dark when the raster underneath is mostly dark
+    mapSvg.classed('dark', layer === 'cleared' || !!f);
   }
   // year colors are looked up often in the "cleared" layer; cache them
   const yearRGB = {};
@@ -204,7 +208,13 @@
   const gBase = mapSvg.append('g');
   for (let lon = -70; lon <= -50; lon += 5) gBase.append('line').attr('class', 'graticule').attr('x1', xOfLon(lon)).attr('x2', xOfLon(lon)).attr('y1', 0).attr('y2', H);
   for (let lat = -15; lat <= 0; lat += 5) gBase.append('line').attr('class', 'graticule').attr('y1', yOfLat(lat)).attr('y2', yOfLat(lat)).attr('x1', 0).attr('x2', W);
-  gBase.append('g').selectAll('path').data(BORDERS.features).join('path').attr('class', 'border').attr('d', geoPath);
+  gBase.append('g').selectAll('path').data(BORDERS.features.filter((f) => f.properties.kind === 'state')).join('path').attr('class', 'border-state').attr('d', geoPath);
+  gBase.append('g').selectAll('path').data(BORDERS.features.filter((f) => f.properties.kind !== 'state')).join('path').attr('class', 'border').attr('d', geoPath);
+  const places = [
+    { lon: -61.5, lat: -5.6, text: 'AMAZONAS' }, { lon: -51.3, lat: -3.4, text: 'PARÁ' }, { lon: -55.0, lat: -14.4, text: 'MATO GROSSO' },
+    { lon: -70.4, lat: -9.2, text: 'ACRE' }, { lon: -64.8, lat: -16.9, text: 'BOLIVIA' }, { lon: -73.2, lat: -12.2, text: 'PERU' },
+  ];
+  gBase.selectAll('text.state-label').data(places).join('text').attr('class', 'state-label').attr('x', (d) => xOfLon(d.lon)).attr('y', (d) => yOfLat(d.lat)).text((d) => d.text);
   for (let lon = -70; lon <= -50; lon += 5) gBase.append('text').attr('class', 'tick-label').attr('x', xOfLon(lon) + 3).attr('y', H - 5).text(`${-lon}°W`);
   for (let lat = -15; lat <= 0; lat += 5) gBase.append('text').attr('class', 'tick-label').attr('x', 4).attr('y', yOfLat(lat) - 3).text(lat === 0 ? '0°' : `${-lat}°S`);
   const annos = [
@@ -219,7 +229,7 @@
   const hoverRect = mapSvg.append('rect').attr('class', 'hover-cell').attr('width', 1).attr('height', 1).style('display', 'none');
 
   function drawRegions() {
-    const data = ['rondonia', 'para', 'control'].map((key) => ({ key, ...REGIONS[key], cb: cellBox(REGIONS[key].box) }));
+    const data = ['rondonia', 'para', 'matogrosso', 'control'].map((key) => ({ key, ...REGIONS[key], cb: cellBox(REGIONS[key].box) }));
     gRegions.selectAll('g.region').data(data, (d) => d.key).join((enter) => {
       const g = enter.append('g').attr('class', 'region');
       g.append('rect').attr('class', 'region-box');
@@ -230,7 +240,7 @@
         const g = d3.select(this), [i0, j0, i1, j1] = d.cb, active = state.preset === d.key;
         g.select('rect').attr('x', i0).attr('y', j0).attr('width', i1 - i0).attr('height', j1 - j0)
           .attr('stroke', d.hex).attr('stroke-opacity', active ? 1 : 0.55).attr('stroke-dasharray', active ? null : '3 3');
-        g.select('text').attr('x', i0 + 2).attr('y', j0 - 4).attr('fill', d.hex).text(d.key === 'control' ? 'Intact forest (control)' : d.name)
+        g.select('text').attr('x', i0 + 2).attr('y', j0 - 4).attr('fill', d.hex).text(d.key === 'control' ? 'Intact forest (control)' : d.key === 'matogrosso' ? 'N. Mato Grosso' : d.name)
           .on('click', (ev) => { ev.stopPropagation(); setPreset(d.key); });
       });
   }
@@ -288,15 +298,15 @@
         <div class="tt-row"><span>Status</span>${status}</div>
         <div class="spark-title">Greenness change by year (single dry seasons)</div><div class="spark" id="spark-n"></div>
         <div class="spark-title">Temperature change by year, °C</div><div class="spark" id="spark-l"></div>`;
-      sparkline('#spark-n', YEARS.map((y, yi) => DN[yi * N + k] === -128 ? NaN : DN[yi * N + k] / 200), '#8c510a', c && c !== 255 ? c + 2000 : null);
-      sparkline('#spark-l', YEARS.map((y, yi) => DL[yi * N + k] === -128 ? NaN : DL[yi * N + k] / 10), '#b2182b', c && c !== 255 ? c + 2000 : null);
+      sparkline('#spark-n', YEARS.map((y, yi) => DN[yi * N + k] === -128 ? NaN : DN[yi * N + k] / 200), '#d9a45b', c && c !== 255 ? c + 2000 : null);
+      sparkline('#spark-l', YEARS.map((y, yi) => DL[yi * N + k] === -128 ? NaN : DL[yi * N + k] / 10), '#ff7a5c', c && c !== 255 ? c + 2000 : null);
     }
     tooltip.attr('hidden', null);
     const r = node.getBoundingClientRect();
     let x = ev.clientX + 16, y = ev.clientY + 16;
     if (x + r.width > window.innerWidth - 8) x = ev.clientX - r.width - 16;
     if (y + r.height > window.innerHeight - 8) y = ev.clientY - r.height - 16;
-    node.style.left = `${x}px`; node.style.top = `${y}px`;
+    node.style.left = `${Math.max(4, x)}px`; node.style.top = `${Math.max(4, y)}px`;
   }
 
   function sparkline(sel, vals, color, markYear) {
@@ -305,11 +315,11 @@
     const ext = d3.extent(vals.filter((v) => !Number.isNaN(v)).concat([0]));
     const y = d3.scaleLinear().domain(ext[0] === ext[1] ? [-1, 1] : ext).nice(2).range([h - m.b, m.t]);
     const svg = d3.select(sel).append('svg').attr('width', w).attr('height', h);
-    svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', '#c3c2b7');
-    svg.append('text').attr('x', m.l - 4).attr('y', y(y.domain()[1]) + 8).attr('text-anchor', 'end').attr('font-size', 9).attr('fill', '#898781').text(minus(d3.format('+.2~f')(y.domain()[1])));
-    svg.append('text').attr('x', m.l - 4).attr('y', y(y.domain()[0])).attr('text-anchor', 'end').attr('font-size', 9).attr('fill', '#898781').text(minus(d3.format('+.2~f')(y.domain()[0])));
-    if (markYear) svg.append('line').attr('x1', x(markYear)).attr('x2', x(markYear)).attr('y1', m.t).attr('y2', h - m.b).attr('stroke', '#b2182b').attr('stroke-dasharray', '2 2');
-    svg.append('rect').attr('x', x(state.year - 2)).attr('width', x(state.year) - x(state.year - 2)).attr('y', m.t).attr('height', h - m.t - m.b).attr('fill', '#000').attr('opacity', 0.05);
+    svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', '#4a544b');
+    svg.append('text').attr('x', m.l - 4).attr('y', y(y.domain()[1]) + 8).attr('text-anchor', 'end').attr('font-size', 9).attr('fill', '#9aa097').text(minus(d3.format('+.2~f')(y.domain()[1])));
+    svg.append('text').attr('x', m.l - 4).attr('y', y(y.domain()[0])).attr('text-anchor', 'end').attr('font-size', 9).attr('fill', '#9aa097').text(minus(d3.format('+.2~f')(y.domain()[0])));
+    if (markYear) svg.append('line').attr('x1', x(markYear)).attr('x2', x(markYear)).attr('y1', m.t).attr('y2', h - m.b).attr('stroke', '#ff7a5c').attr('stroke-dasharray', '2 2');
+    svg.append('rect').attr('x', x(state.year - 2)).attr('width', x(state.year) - x(state.year - 2)).attr('y', m.t).attr('height', h - m.t - m.b).attr('fill', '#fff').attr('opacity', 0.08);
     svg.append('path').datum(vals.map((v, i) => [YEARS[i], v]))
       .attr('d', d3.line().defined((d) => !Number.isNaN(d[1])).x((d) => x(d[0])).y((d) => y(d[1])))
       .attr('fill', 'none').attr('stroke', color).attr('stroke-width', 1.6);
@@ -363,9 +373,9 @@
   }
 
   d3.select('#scatter-legend').html(`
-    <span><i style="background:linear-gradient(90deg,#c6dbef,#08306b)"></i>squares in selected area (darker = more)</span>
-    <span><i style="background:#e4e2db"></i>rest of map</span>
-    <span><i style="background:#0b0b0b;height:2px"></i>median</span>`);
+    <span><i style="background:linear-gradient(90deg,#1f4466,#cfe8ff)"></i>squares in selected area (brighter = more)</span>
+    <span><i style="background:#2a312b"></i>rest of map</span>
+    <span><i style="background:var(--ink);height:2px"></i>median</span>`);
 
   function binCounts(cells) {
     const counts = new Uint32Array(nbx * nby);
@@ -392,10 +402,10 @@
     // background: whole map, only when a sub-area is selected
     if (!allCellsList) { const a = []; for (let k = 0; k < N; k++) if (baseN[k] !== 255) a.push(k); allCellsList = Int32Array.from(a); }
     const bg = state.box ? binCounts(allCellsList) : [];
-    scBg.selectAll('rect').data(bg, (d) => d.bj * nbx + d.bi).join('rect').call(place).attr('fill', '#e4e2db');
+    scBg.selectAll('rect').data(bg, (d) => d.bj * nbx + d.bi).join('rect').call(place).attr('fill', '#2a312b');
     const fg = binCounts(selCells);
     const maxC = d3.max(fg, (d) => d.c) || 1;
-    const col = d3.scaleSequentialLog((t) => d3.interpolateBlues(0.28 + 0.72 * t)).domain([1, Math.max(2, maxC)]);
+    const col = d3.scaleSequentialLog(d3.interpolateRgb('#1f4466', '#cfe8ff')).domain([1, Math.max(2, maxC)]);
     scFg.selectAll('rect').data(fg, (d) => d.bj * nbx + d.bi).join('rect').call(place).attr('fill', (d) => col(d.c));
 
     // median temperature change per 0.05-wide greenness bin (≥ 20 squares)
@@ -433,7 +443,7 @@
   const tsX = tsSvg.append('g').attr('class', 'axis').attr('transform', `translate(0,${TS.h - TS.m.b})`);
   const tsY = tsSvg.append('g').attr('class', 'axis').attr('transform', `translate(${TS.m.l},0)`);
   tsSvg.append('text').attr('class', 'axis-title').attr('transform', `translate(11,${TS.m.t}) rotate(-90)`).attr('text-anchor', 'end').text('temperature change, °C');
-  const tsGap = tsSvg.append('path').attr('fill', '#fbe5e3');
+  const tsGap = tsSvg.append('path').attr('fill', 'rgba(255,122,92,.16)');
   const tsZero = tsSvg.append('line').attr('class', 'ref');
   const tsLines = tsSvg.append('g');
   const tsCursor = tsSvg.append('g');
@@ -445,8 +455,8 @@
   const taY = taSvg.append('g').attr('class', 'axis').attr('transform', `translate(${TA.m.l},0)`);
   const taX = taSvg.append('g').attr('class', 'axis').attr('transform', `translate(0,${TA.h - TA.m.b})`);
   taSvg.append('text').attr('x', TA.m.l).attr('y', 10).attr('class', 'label-strong').text('Share of selected area cleared (cumulative)');
-  const taArea = taSvg.append('path').attr('fill', '#d9b37a');
-  const taLine = taSvg.append('path').attr('fill', 'none').attr('stroke', '#8c510a').attr('stroke-width', 2);
+  const taArea = taSvg.append('path').attr('fill', 'rgba(217,164,91,.32)');
+  const taLine = taSvg.append('path').attr('fill', 'none').attr('stroke', '#d9a45b').attr('stroke-width', 2);
   const taCursor = taSvg.append('g');
   const taHit = taSvg.append('rect').attr('x', TA.m.l).attr('y', TA.m.t).attr('width', TA.w - TA.m.l - TA.m.r).attr('height', TA.h - TA.m.t - TA.m.b).attr('fill', 'transparent').style('cursor', 'pointer');
 
@@ -468,11 +478,11 @@
     tsGap.attr('d', d3.area().defined((d) => okC(d) && !Number.isNaN(d.stable)).x((d) => tx(d.year)).y0((d) => ty(d.stable)).y1((d) => ty(d.cleared))(ser));
     const lines = [
       // faint dotted line where only 5–19 squares count as cleared (too few to trust, but shows the trend)
-      { key: 'cleared-few', label: null, color: '#b2182b', pts: ser.map((d) => [d.year, d.nC >= 5 ? d.cleared : NaN]), w: 1.2, dash: '1.5 3', opacity: 0.6 },
-      { key: 'cleared', label: 'Cleared', color: '#b2182b', pts: ser.map((d) => [d.year, okC(d) ? d.cleared : NaN]), w: 2.2 },
-      { key: 'stable', label: 'Stable forest', color: '#01665e', pts: ser.map((d) => [d.year, d.stable]), w: 2.2 },
+      { key: 'cleared-few', label: null, color: '#ff7a5c', pts: ser.map((d) => [d.year, d.nC >= 5 ? d.cleared : NaN]), w: 1.2, dash: '1.5 3', opacity: 0.6 },
+      { key: 'cleared', label: 'Cleared', color: '#ff7a5c', pts: ser.map((d) => [d.year, okC(d) ? d.cleared : NaN]), w: 2.2 },
+      { key: 'stable', label: 'Stable forest', color: '#4fc3b0', pts: ser.map((d) => [d.year, d.stable]), w: 2.2 },
     ];
-    if (showCtrl) lines.push({ key: 'control', label: 'Intact control', color: '#898781', pts: ctrl.map((d) => [d.year, d.all]), w: 1.4, dash: '4 3' });
+    if (showCtrl) lines.push({ key: 'control', label: 'Intact control', color: '#9aa097', pts: ctrl.map((d) => [d.year, d.all]), w: 1.4, dash: '4 3' });
     const line = d3.line().defined((d) => !Number.isNaN(d[1])).x((d) => tx(d[0])).y((d) => ty(d[1]));
     tsLines.selectAll('path').data(lines, (d) => d.key).join('path').attr('fill', 'none').attr('stroke', (d) => d.color).attr('stroke-width', (d) => d.w)
       .attr('stroke-dasharray', (d) => d.dash || null).attr('opacity', (d) => d.opacity ?? 1).attr('d', (d) => line(d.pts));
@@ -492,14 +502,14 @@
   function drawCursor() {
     const yi = YEARS.indexOf(state.year), s = selSeries[yi], c = controlSeries[yi], X = tx(state.year);
     tsCursor.selectAll('*').remove();
-    tsCursor.append('rect').attr('x', tx(Math.max(2001, state.year - 2))).attr('width', X - tx(Math.max(2001, state.year - 2))).attr('y', TS.m.t).attr('height', TS.h - TS.m.t - TS.m.b).attr('fill', '#000').attr('opacity', 0.04);
+    tsCursor.append('rect').attr('x', tx(Math.max(2001, state.year - 2))).attr('width', X - tx(Math.max(2001, state.year - 2))).attr('y', TS.m.t).attr('height', TS.h - TS.m.t - TS.m.b).attr('fill', '#fff').attr('opacity', 0.06);
     tsCursor.append('line').attr('x1', X).attr('x2', X).attr('y1', TS.m.t).attr('y2', TS.h - TS.m.b).attr('stroke', 'var(--ink)').attr('stroke-width', 1);
-    const dots = [[s.nC >= MIN_CLEARED ? s.cleared : NaN, '#b2182b'], [s.stable, '#01665e']];
-    if (state.preset !== 'control') dots.push([c.all, '#898781']);
-    for (const [v, col] of dots) if (!Number.isNaN(v)) tsCursor.append('circle').attr('cx', X).attr('cy', ty(v)).attr('r', 4).attr('fill', col).attr('stroke', '#fff').attr('stroke-width', 2);
+    const dots = [[s.nC >= MIN_CLEARED ? s.cleared : NaN, '#ff7a5c'], [s.stable, '#4fc3b0']];
+    if (state.preset !== 'control') dots.push([c.all, '#9aa097']);
+    for (const [v, col] of dots) if (!Number.isNaN(v)) tsCursor.append('circle').attr('cx', X).attr('cy', ty(v)).attr('r', 4).attr('fill', col).attr('stroke', '#121713').attr('stroke-width', 2);
     taCursor.selectAll('*').remove();
     taCursor.append('line').attr('x1', X).attr('x2', X).attr('y1', TA.m.t).attr('y2', TA.h - TA.m.b).attr('stroke', 'var(--ink)');
-    taCursor.append('circle').attr('cx', X).attr('cy', ay(s.pctCleared)).attr('r', 4).attr('fill', '#8c510a').attr('stroke', '#fff').attr('stroke-width', 2);
+    taCursor.append('circle').attr('cx', X).attr('cy', ay(s.pctCleared)).attr('r', 4).attr('fill', '#d9a45b').attr('stroke', '#121713').attr('stroke-width', 2);
     taCursor.append('text').attr('x', TA.w - TA.m.r + 6).attr('y', ay(s.pctCleared) + 4).attr('class', 'label-strong').text(`${s.pctCleared.toFixed(1)}% by ${state.year}`);
   }
 
@@ -510,7 +520,7 @@
   }
   function drawReadout() {
     const s = selSeries[YEARS.indexOf(state.year)], win = windowLabel(state.year);
-    const swatch = REGIONS[state.preset] && REGIONS[state.preset].hex ? `<i class="sw" style="--c:${REGIONS[state.preset].hex}"></i>` : '';
+    const swatch = REGIONS[state.preset] && REGIONS[state.preset].color ? `<i class="sw" style="--c:${REGIONS[state.preset].color}"></i>` : '';
     d3.select('#readout-area').html(swatch + areaName());
     const num = d3.select('#readout-num'), text = d3.select('#readout-text');
     if (state.preset === 'control') {
@@ -549,9 +559,9 @@
       svg.append('text').attr('x', 0).attr('y', 30).text('2004');
       svg.append('text').attr('x', yrs.length * bw - 1).attr('y', 30).attr('text-anchor', 'end').text('2022');
       const x2 = yrs.length * bw + 12;
-      svg.append('rect').attr('x', x2).attr('y', 4).attr('width', 12).attr('height', 12).attr('fill', 'rgb(240,239,236)').attr('stroke', '#ccc');
-      svg.append('text').attr('x', x2 + 16).attr('y', 14).text('not cleared');
-      svg.append('rect').attr('x', x2).attr('y', 22).attr('width', 12).attr('height', 12).attr('fill', 'rgb(201,199,189)');
+      svg.append('rect').attr('x', x2).attr('y', 4).attr('width', 12).attr('height', 12).attr('fill', 'rgb(47,62,50)').attr('stroke', '#4a544b');
+      svg.append('text').attr('x', x2 + 16).attr('y', 14).text('not cleared (yet)');
+      svg.append('rect').attr('x', x2).attr('y', 22).attr('width', 12).attr('height', 12).attr('fill', 'rgb(38,43,39)').attr('stroke', '#4a544b');
       svg.append('text').attr('x', x2 + 16).attr('y', 32).text('water / no data');
       return;
     }
@@ -562,27 +572,82 @@
     svg.append('rect').attr('x', 0).attr('y', 4).attr('width', lw).attr('height', 12).attr('rx', 2).attr('fill', `url(#${id})`);
     const ticks = isN ? [-0.3, 0, 0.3] : [-5, 0, 5];
     ticks.forEach((t) => {
-      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', 16).attr('y2', 20).attr('stroke', '#898781');
+      svg.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', 16).attr('y2', 20).attr('stroke', '#9aa097');
       svg.append('text').attr('x', x(t)).attr('y', 31).attr('text-anchor', t === -dom ? 'start' : t === dom ? 'end' : 'middle')
         .text((t > 0 ? '+' : t < 0 ? '−' : '') + Math.abs(t) + (isN ? '' : ''));
     });
-    svg.append('text').attr('x', x(-dom * 0.5)).attr('y', 31).attr('text-anchor', 'middle').attr('fill', '#898781').text(isN ? 'less green' : 'cooler');
-    svg.append('text').attr('x', x(dom * 0.5)).attr('y', 31).attr('text-anchor', 'middle').attr('fill', '#898781').text(isN ? 'greener' : 'hotter');
+    svg.append('text').attr('x', x(-dom * 0.5)).attr('y', 31).attr('text-anchor', 'middle').attr('fill', '#9aa097').text(isN ? 'less green' : 'cooler');
+    svg.append('text').attr('x', x(dom * 0.5)).attr('y', 31).attr('text-anchor', 'middle').attr('fill', '#9aa097').text(isN ? 'greener' : 'hotter');
     svg.append('text').attr('x', lw + 8).attr('y', 14).text(isN ? 'NDVI' : '°C');
-    svg.append('text').attr('x', lw + 8).attr('y', 28).attr('fill', '#898781').text(isN ? '(ends ≥ ±0.3)' : '(ends ≥ ±5)');
+    svg.append('text').attr('x', lw + 8).attr('y', 28).attr('fill', '#9aa097').text(isN ? '(ends ≥ ±0.3)' : '(ends ≥ ±5)');
   }
+
+  // --- timeline: yearly clearing as bars; the chart itself is the year slider
+  const TL = { w: 560, h: 62, m: { l: 4, r: 4, t: 8, b: 16 } };
+  const tlSvg = d3.select('#timeline');
+  const tlX = d3.scaleBand().domain(YEARS).range([TL.m.l, TL.w - TL.m.r]).paddingInner(0.2);
+  const tlY = d3.scaleLinear().range([TL.h - TL.m.b, TL.m.t]);
+  const KM2_PER_CELL = (DEG * 111.32) ** 2;      // at the equator; scaled by cos(latitude) below
+  const PROVISIONAL = new Set([2021, 2022]);       // fewer than 3 later years to confirm the clearing
+  let newlyCleared = YEARS.map(() => 0);
+  function computeNewlyCleared() {
+    const out = YEARS.map(() => 0);
+    for (const k of selCells) {
+      const c = clr[k];
+      if (c === 0 || c === 255) continue;
+      const yi = c + 2000 - YEARS[0];
+      if (yi >= 0 && yi < NY) out[yi] += cellArea[(k / W) | 0] * KM2_PER_CELL;
+    }
+    newlyCleared = out;
+  }
+  const tlWindow = tlSvg.append('rect').attr('class', 'tl-window').attr('y', 1).attr('height', TL.h - TL.m.b + 1).attr('rx', 3);
+  tlSvg.append('line').attr('class', 'tl-base').attr('x1', TL.m.l).attr('x2', TL.w - TL.m.r).attr('y1', TL.h - TL.m.b + 0.5).attr('y2', TL.h - TL.m.b + 0.5);
+  const tlBars = tlSvg.append('g'), tlLabels = tlSvg.append('g'), tlSlots = tlSvg.append('g');
+  tlSvg.append('text').attr('x', tlX(2002) + tlX.bandwidth() / 2).attr('y', TL.h - TL.m.b - 5).attr('text-anchor', 'middle').text('baseline years');
+  tlSvg.append('text').attr('x', tlX(2021) - 6).attr('y', 9).attr('text-anchor', 'end').text('2021–22 provisional →');
+  function drawTimeline() {
+    tlY.domain([0, Math.max(1, d3.max(newlyCleared))]);
+    const y0 = TL.h - TL.m.b, lo = Math.max(2001, state.year - 2);
+    const inWin = (y) => (state.layer === 'cleared' ? y === state.year : y >= lo && y <= state.year);
+    tlWindow.attr('x', tlX(state.layer === 'cleared' ? state.year : lo) - 2)
+      .attr('width', tlX(state.year) + tlX.bandwidth() - tlX(state.layer === 'cleared' ? state.year : lo) + 4);
+    tlBars.selectAll('rect').data(YEARS).join('rect')
+      .attr('class', (y) => 'tl-bar' + (PROVISIONAL.has(y) ? ' provisional' : '') + (y > state.year ? ' future' : inWin(y) ? ' in-window' : ''))
+      .attr('x', (y) => tlX(y)).attr('width', tlX.bandwidth())
+      .attr('y', (y, i) => (newlyCleared[i] > 0 ? Math.min(y0 - 1.5, tlY(newlyCleared[i])) : y0))
+      .attr('height', (y, i) => (newlyCleared[i] > 0 ? Math.max(1.5, y0 - tlY(newlyCleared[i])) : 0));
+    tlLabels.selectAll('text').data(YEARS.filter((y) => (y - 2001) % 3 === 0 || y === state.year)).join('text')
+      .attr('class', (y) => (y === state.year ? 'on' : null))
+      .attr('display', (y) => (y !== state.year && Math.abs(y - state.year) < 2 ? 'none' : null))
+      .attr('x', (y) => tlX(y) + tlX.bandwidth() / 2).attr('y', TL.h - 3).attr('text-anchor', 'middle').text((y) => y);
+    tlSlots.selectAll('rect').data(YEARS).join((enter) => enter.append('rect').attr('class', 'tl-slot').call((r) => r.append('title')))
+      .attr('x', (y) => tlX(y) - tlX.step() * tlX.paddingInner() / 2).attr('width', tlX.step()).attr('y', 0).attr('height', TL.h)
+      .select('title').text((y, i) => (y < 2004 ? `${y}: baseline year` : `${y}: about ${fmtInt(Math.round(newlyCleared[i] / 10) * 10)} km² newly cleared${PROVISIONAL.has(y) ? ' (provisional)' : ''}`));
+    tlSvg.attr('aria-valuenow', state.year).attr('aria-valuetext', windowLabel(state.year));
+  }
+  const tlYearAt = (ev) => {
+    const [mx] = d3.pointer(ev, tlSvg.node());
+    return YEARS[Math.max(0, Math.min(NY - 1, Math.floor((mx - TL.m.l) / tlX.step())))];
+  };
+  tlSvg.call(d3.drag().on('start drag', (ev) => { stopPlay(); const y = tlYearAt(ev); if (y !== state.year) setYear(y); }));
+  tlSvg.on('keydown', (ev) => {
+    const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[ev.key];
+    const y = step ? state.year + step : ev.key === 'Home' ? 2001 : ev.key === 'End' ? 2022 : null;
+    if (y == null) return;
+    ev.preventDefault(); stopPlay();
+    setYear(Math.max(2001, Math.min(2022, y)));
+  });
 
   // --- state setters
   function setLayer(layer) {
     state.layer = layer;
     d3.selectAll('#layer-seg button').attr('aria-checked', function () { return this.dataset.layer === layer; });
-    drawMap(); drawTitles(); drawLegend();
+    drawMap(); drawTitles(); drawLegend(); drawTimeline();
   }
   function setYear(y) {
     state.year = y;
-    document.getElementById('year-slider').value = y;
     computeFrame();
-    drawMap(); drawTitles(); drawScatter(); drawCursor(); drawReadout();
+    drawMap(); drawTitles(); drawScatter(); drawCursor(); drawReadout(); drawTimeline();
     if (state.layer === 'cleared') drawLegend();
   }
   function setArea(preset, box) {
@@ -590,7 +655,8 @@
     d3.selectAll('#preset-chips button').attr('aria-pressed', function () { return this.dataset.preset === preset; });
     computeSelection();
     selSeries = seriesFor(selCells);
-    drawRegions(); drawScatter(); drawTS(); drawReadout();
+    computeNewlyCleared();
+    drawRegions(); drawScatter(); drawTS(); drawReadout(); drawTimeline();
   }
   function setPreset(key) {
     const box = REGIONS[key].box ? cellBox(REGIONS[key].box) : null;
@@ -600,7 +666,6 @@
 
   d3.selectAll('#layer-seg button').on('click', function () { stopPlay(); setLayer(this.dataset.layer); });
   d3.selectAll('#preset-chips button').on('click', function () { setPreset(this.dataset.preset); });
-  d3.select('#year-slider').on('input', function () { stopPlay(); setYear(+this.value); });
 
   let playTimer = null;
   const playBtn = d3.select('#play-btn');
@@ -694,7 +759,7 @@
     },
     {
       title: 'Watch it spread',
-      text: 'Now each square lights up in the year it was cleared, lightest for 2004 and darkest for 2022. Clearing moves outward from the roads year after year.',
+      text: 'Now each square lights up in the year it was cleared, deep orange for 2004 through pale yellow for 2022. Clearing moves outward from the roads year after year.',
       run() { setFilter(null); setLayer('cleared'); setPreset('all'); play(2004, 380); },
     },
     {

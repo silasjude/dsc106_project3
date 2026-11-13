@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Heat Left Behind · Amazon deforestation and land surface temperature</title>
+  <title>Exploring vegetation and temperature changes in the Amazon</title>
   <meta name="description" content="An interactive look at 22 years of MODIS satellite data: where the southern Amazon lost its forest, and how much hotter the ground got.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
 <header class="hero">
   <div class="hero-inner">
     <p class="kicker">DSC 106 · Project 3 · Team 11</p>
-    <h1>The Heat Left Behind</h1>
+    <h1>Exploring vegetation and temperature changes in the Amazon</h1>
     <p class="dek">When the Amazon rainforest is cut down, the ground underneath gets hotter. Twenty-two years of NASA satellite data show how much.</p>
 
     <figure class="swipe-figure">
@@ -71,6 +71,7 @@
         <button type="button" data-preset="all">Whole map</button>
         <button type="button" data-preset="rondonia"><i class="sw" style="--c:var(--c-rondonia)"></i>Rondônia</button>
         <button type="button" data-preset="para"><i class="sw" style="--c:var(--c-para)"></i>Pará (BR-163)</button>
+        <button type="button" data-preset="matogrosso"><i class="sw" style="--c:var(--c-matogrosso)"></i>N. Mato Grosso</button>
         <button type="button" data-preset="control"><i class="sw" style="--c:var(--c-control)"></i>Intact forest</button>
       </div>
     </div>
@@ -92,9 +93,11 @@
         <div id="map-legend" class="legend"></div>
         <div class="timeline">
           <button id="play-btn" class="btn btn-play" type="button" aria-label="Play through the years">▶</button>
-          <label class="year-label" for="year-slider"><span id="year-range-label">2020–22</span></label>
-          <input id="year-slider" type="range" min="2001" max="2022" step="1" value="2022" aria-describedby="year-help">
-          <span id="year-help" class="sr-only">Selects the last year of the three-year window shown on the map and charts.</span>
+          <span class="year-label" id="year-range-label">2020–22</span>
+          <div class="timeline-main">
+            <p class="timeline-caption" id="timeline-caption">Land newly cleared each year in the selected area. Drag, click, or use the ← → keys.</p>
+            <svg id="timeline" viewBox="0 0 560 62" role="slider" tabindex="0" aria-label="Year" aria-valuemin="2001" aria-valuemax="2022" aria-valuenow="2022"></svg>
+          </div>
         </div>
       </div>
     </div>
@@ -157,7 +160,7 @@
     <li><b>Why stop at 2022.</b> Terra's orbit has been drifting since 2022, so it now passes over earlier in the morning, when the ground is cooler. Untouched forest in our control box "cooled" by 1–2 °C in 2025–26 for that reason alone, so later years would mislead.</li>
   </ol>
   <p class="caveat"><b>Limits.</b> 5 km squares blur small clearings, so cleared area here is a lower bound. A drop in NDVI can also come from fire or drought (the 3-year persistence rule and the stable-square comparison limit this but can't remove it). LST is a skin temperature at one time of day, not air temperature.</p>
-  <p class="links"><a href="writeup.html">Write-up: design rationale &amp; development process →</a> · <a href="https://github.com/silasjude/dsc106_project3/tree/heat-left-behind">Source code on GitHub</a></p>
+  <p class="links"><a href="writeup.html">Write-up: design rationale &amp; development process →</a> · <a href="https://github.com/silasjude/dsc106_project3/tree/final-submission">Source code on GitHub</a></p>
 </section>
 </main>
 

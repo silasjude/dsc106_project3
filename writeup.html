@@ -3,117 +3,159 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Write-up · The Heat Left Behind</title>
+  <title>Write-up · Exploring vegetation and temperature changes in the Amazon</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .wu { max-width: 760px; margin: 0 auto; padding: 48px 20px 60px; font-size: 17px; }
-    .wu h1 { font-family: var(--serif); font-size: 44px; margin: 8px 0 4px; letter-spacing: -.01em; }
-    .wu h2 { font-family: var(--serif); font-weight: 600; font-size: 27px; margin: 40px 0 8px; }
-    .wu h3 { font-size: 17px; margin: 24px 0 6px; }
+    .wu { max-width: 760px; margin: 0 auto; padding: 48px 20px 60px; font-size: 17px; color: var(--ink2); }
+    .wu h1 { font-family: var(--serif); font-size: 44px; margin: 8px 0 4px; letter-spacing: -.01em; color: var(--ink); }
+    .wu h2 { font-family: var(--serif); font-weight: 600; font-size: 27px; margin: 44px 0 8px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink); }
+    .wu h3 { font-size: 17px; margin: 26px 0 6px; color: var(--ink); }
+    .wu b { color: var(--ink); }
+    .wu li { margin-bottom: 8px; }
     .back { font-weight: 600; text-decoration: none; }
-    /* DRAFT styling: delete this block (and the .draft notes) once the team's own text is in */
-    .draft-banner { background: #fff4c2; border: 1px solid #e6cf6b; border-radius: 8px; padding: 12px 14px; font-size: 15px; margin: 18px 0 8px; }
-    .draft { background: #fffbe6; border-left: 3px solid #e6cf6b; padding: 8px 12px 8px 28px; font-size: 15px; color: #4a4630; margin: 8px 0 14px; }
-    .draft li { margin: 3px 0; }
-    .yours { color: #9a3412; font-style: italic; }
-    table { border-collapse: collapse; font-size: 15px; width: 100%; }
-    td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+    .todo { background: rgba(255, 214, 92, .14); border: 1px solid #b89a3a; border-radius: 8px; padding: 10px 14px; color: #f3e3a8; }
   </style>
 </head>
 <body>
 <main class="wu">
   <a class="back" href="index.html">← Back to the visualization</a>
   <h1>Write-up</h1>
-  <p class="muted">The Heat Left Behind · DSC 106 Project 3 · Team 11</p>
+  <p class="muted">Exploring vegetation and temperature changes in the Amazon · DSC 106 Project 3 · Team 11</p>
 
-  <div class="draft-banner"><b>TEAM: draft notes, not final text.</b> The yellow boxes list the facts each section should cover.
-    Write each section in your own words, replace every <span class="yours">[bracket]</span>, then delete the yellow boxes and the <code>&lt;style&gt;</code> block marked DRAFT.
-    (The rubric caps a write-up that reads as AI-generated at 2/3.)</div>
-
-  <!-- ========================================================= -->
   <h2>Motivation</h2>
-  <p class="yours">[2–4 sentences, your words: why we picked this question and what a reader should take away.]</p>
-  <ul class="draft">
-    <li>Question: does losing forest cover make the land surface measurably hotter, and by how much?</li>
-    <li>Mechanism to mention: forests cool the surface through evapotranspiration; pasture moves less water, so more sunlight becomes heat.</li>
-    <li>Headline result (2020–22 vs 2001–03, dry season): cleared squares warmed about 3.8 °C more than stable forest nearby in Rondônia and about 4.0 °C more along BR-163 in Pará. Same as our checkpoint notebook (3.83 and 4.01).</li>
-    <li>Link back to the checkpoint: we started from global NDVI/LST maps, narrowed to the Amazon, then to the cleared-vs-stable comparison.</li>
-  </ul>
+  <p>
+    Our checkpoint question was whether deforestation in the Amazon shows up as a change in temperature.
+    A forest cools the ground by moving water from the soil into the air, and pasture
+    moves much less water, so more sunlight ends up as heat. We wanted readers to be able to check that claim
+    themselves on real measurements, place by place and year by year, and to come away with a number. In our
+    data, land that was cleared ended up roughly 4&nbsp;°C hotter in the dry season than forest next to it that
+    was left standing.
+  </p>
+  <p>
+    We started the project with global maps of several MODIS products, narrowed to vegetation and land surface
+    temperature, then to the southern Amazon, and finally to the comparison between cleared and stable land
+    that the page is built around.
+  </p>
 
-  <!-- ========================================================= -->
   <h2>Design rationale</h2>
 
+  <h3>Data transformations</h3>
+  <ul>
+    <li><b>Decoding.</b> NASA GIBS serves coloured images, not numbers. We matched every pixel colour back to
+      a value with each layer's published colour map. NDVI was requested at 0.01° and averaged into 0.05°
+      squares (about 5.5&nbsp;km) so it sits on the same grid as temperature.</li>
+    <li><b>Dry season only.</b> Each year is the median of July, August and September. Forest stays green in
+      the dry season and pasture dries out, so the contrast is largest then, and the wet season is too cloudy
+      to use. A median of three months survives one bad month.</li>
+    <li><b>Change, not level.</b> Everything is shown as the difference from the same square's 2001–03
+      average. Raw temperature mostly reflects elevation and latitude, and subtracting each square's own
+      baseline removes that.</li>
+    <li><b>Three-year averages.</b> The map and scatter show the three years ending at the selected year,
+      because single years swing with drought and smoke (2005, 2010, 2015–16).</li>
+    <li><b>Cleared and stable.</b> A square is cleared when its NDVI is more than 0.20 below baseline, and
+      stable when it is within 0.05. We picked 0.20 because almost no squares in our untouched control box
+      fall that far, so it sits outside normal noise. For the “year cleared” map the drop also has to last
+      three years.</li>
+    <li><b>Clearing effect.</b> The headline number is the average temperature change of cleared squares
+      minus that of stable squares in the same area. Regional warming and drought hit both groups, so the
+      subtraction leaves what clearing added.</li>
+    <li><b>Stopping at 2022.</b> Terra's orbit has drifted since then, so it passes over earlier in the
+      morning and reads cooler. Our checkpoint plot of the Sahara showed the same artificial drop, so we cut
+      the record there.</li>
+  </ul>
+  <p>These steps are also listed on the main page under “How the numbers were made”, and each chart's subtitle says which ones apply to it.</p>
+
   <h3>Visual encodings</h3>
-  <p class="yours">[Explain each choice and why. Use the table as a checklist, not as the final text.]</p>
-  <table class="draft">
-    <tr><th>Element</th><th>Encoding</th><th>Reasoning to put in your own words</th></tr>
-    <tr><td>Map</td><td>Position = geography; one 5 km square = one pixel (canvas)</td><td>Spatial pattern (roads, the "arc") is the story; canvas because ~240,000 SVG rects would be too slow to animate.</td></tr>
-    <tr><td>Greenness change</td><td>Diverging brown ↔ teal (ColorBrewer BrBG), neutral middle = no change, ends at ±0.3</td><td>The data has a sign (loss vs gain), so diverging; brown reads as bare or dry land. Ends at ±0.3 so a few extreme squares don't wash out everything else. Same scale as our notebook.</td></tr>
-    <tr><td>Temperature change</td><td>Diverging blue ↔ red (RdBu), ends at ±5 °C</td><td>Conventional hot/cold; same neutral middle so "no change" looks alike on both maps.</td></tr>
-    <tr><td>Year cleared</td><td>Sequential light → dark (YlOrBr), 2004–2022</td><td>Ordered quantity → one-hue ramp, not a rainbow. Brown family links it to greenness loss.</td></tr>
-    <tr><td>Scatter</td><td>2-D histogram (binned squares, log color), median line, group means + bracket</td><td>Plotting ~230k points overplots badly (an expressiveness problem). Binning shows density. The median line shows the trend, and the bracket shows the effect size directly.</td></tr>
-    <tr><td>Time series</td><td>Lines for cleared / stable / intact control on one °C axis; separate area chart for % area cleared</td><td>We avoided a dual axis. Different units get separate charts. Lines are labeled directly so color isn't the only cue.</td></tr>
-    <tr><td>Region colors</td><td>Rondônia blue, Pará orange, control gray</td><td>Kept from the notebook; the control is gray because it's a reference, not a story.</td></tr>
-  </table>
+  <ul>
+    <li><b>Map.</b> Position is geography, and each 5&nbsp;km square is one pixel. Change has a direction and a
+      real zero, so both change layers use a diverging colour scale with a pale middle: brown to teal for
+      greenness (brown reads as bare ground) and blue to red for temperature. The scales end at ±0.3 NDVI and
+      ±5&nbsp;°C so that a few extreme squares do not wash out everything else. Water and missing data are a
+      dark grey that is on neither scale.</li>
+    <li><b>Year cleared.</b> Year is an ordered quantity, so it gets a single ramp from deep orange (2004) to
+      pale yellow (2022). On the dark page this makes the newest clearing the brightest thing on the map.</li>
+    <li><b>Scatter.</b> The relationship between the two measures is the answer to our question, so it gets
+      position on both axes. About 230,000 points would overplot into a blob, so we bin them into rectangles
+      and colour by count on a log scale, which keeps the thin tail of heavily cleared squares visible next
+      to the huge pile near zero. The white line is the median temperature change in each slice of greenness
+      change, and the bracket marks the clearing effect directly on the chart.</li>
+    <li><b>Time series.</b> Cleared, stable and the intact control share one °C axis and are labelled at the
+      line ends, so colour is not the only cue. The share of land cleared has different units, so it has its
+      own small chart under the lines. We did not want a dual axis.</li>
+    <li><b>Black background.</b> The header photo is dark satellite imagery, and we carried that through the
+      whole page. Against black, the map and the lit squares in a selection are the brightest things on
+      screen, which is where we want the eye. We rechecked every chart colour for contrast after the switch;
+      the cleared and stable lines became a lighter coral and teal.</li>
+  </ul>
 
   <h3>Interaction techniques</h3>
-  <p class="yours">[For each technique: what it lets the reader discover that a static chart couldn't.]</p>
-  <ul class="draft">
-    <li><b>Time slider + play</b> (dynamic query over 2001–2022): shows clearing spreading out from roads, which a single before/after map hides.</li>
-    <li><b>Brushing and linking</b>: box on the map → scatter, time series and readout update for that area. Box on the scatter → only those squares stay lit on the map (e.g. box the "cleared" tail and you see the fishbone road pattern).</li>
-    <li><b>Details on demand</b>: hover tooltip with a square's 22-year greenness and temperature history; you can see the year it was cleared and the temperature jump right after.</li>
-    <li><b>Presets</b> (Rondônia, Pará, intact control): one click to the comparisons from our analysis; the control shows the background trend.</li>
-    <li><b>Guided tour</b> (6 steps): narrative layer that sets the state for each finding; the reader can leave at any point and explore.</li>
-    <li><b>Satellite swipe</b> in the header: real MODIS true-color images 2001 vs 2021, as a hook before the data.</li>
+  <ul>
+    <li><b>Year slider that is also a chart.</b> The slider is a bar chart of how much land was newly cleared
+      each year in the selected area. It shows when the clearing happened before you drag, and dragging or
+      pressing play shows it spreading out from the roads, which a single before-and-after map hides.</li>
+    <li><b>Brushing the map</b> filters the scatter, the lines, the readout and the slider's bars to that
+      area. This is how a reader tests the claim locally: a clearing frontier and an untouched block give
+      visibly different pictures.</li>
+    <li><b>Brushing the scatter</b> goes the other way and shows where a part of the distribution lives. Box
+      the hot, cleared corner and only those squares stay lit on the map, strung along the highways. A static
+      figure can show that the two measures are correlated, but not this.</li>
+    <li><b>Hover</b> gives one square's 22-year history of greenness and temperature, including the year it
+      was cleared.</li>
+    <li><b>Presets</b> jump to the areas from our analysis. The intact control is the important one, because
+      it shows how little happens where nothing was cut.</li>
+    <li><b>The tour</b> sets up the view for each finding in order, and the reader can leave it at any step.</li>
+    <li><b>The satellite swipe</b> at the top is a hook: two real photographs of Rondônia twenty years apart,
+      before any abstract data.</li>
   </ul>
 
   <h3>Alternatives we considered</h3>
-  <p class="yours">[Pick the ones you actually discussed; add your own.]</p>
-  <ul class="draft">
-    <li>Two side-by-side static maps (NDVI change, LST change): clear, but no way to quantify the link or look at a sub-region.</li>
-    <li>A plain point scatter: unreadable at this size; a hexbin needs the d3-hexbin plugin (not core D3), so we used square bins.</li>
-    <li>One dual-axis chart of NDVI and LST over time: rejected, since dual axes suggest correlations through arbitrary scaling.</li>
-    <li>Single-year frames: too noisy (2005, 2010, 2015–16 droughts) → 3-year trailing average.</li>
-    <li>Extending to 2026: rejected after finding the Terra orbit drift (control forest "cools" 1–2 °C in 2025–26).</li>
-    <li>CMIP6 model projections: we wanted observed change, so we used MODIS.</li>
+  <ul>
+    <li><b>Three separate designs.</b> Each of three of us built a full version on a branch: this one, a
+      version with two maps side by side and a bar-chart year slider, and a lighter version with a one-direction
+      scatter brush. The final page keeps the first as the base and takes the slider from the second and the
+      state outlines and extra preset from the third.</li>
+    <li><b>Two maps side by side.</b> Easy to compare at a glance, but each map is half the size, and the
+      scatter does the same comparison more precisely. We kept one large map with a toggle.</li>
+    <li><b>A plain range slider.</b> It works, but it tells you nothing until you move it.</li>
+    <li><b>A plain point scatter, or hexagonal bins.</b> Points are unreadable at this size. Hexagons need a
+      plugin outside core D3, and rectangles line up with the axis ticks and the brush edges.</li>
+    <li><b>A light page.</b> Our first builds were light. The dark version won when we put them next to each other.</li>
+    <li><b>One dual-axis chart of NDVI and temperature.</b> Rejected, because the apparent relationship would
+      depend on how we scaled the two axes.</li>
+    <li><b>Extending to 2026.</b> Rejected after we found the orbit drift.</li>
   </ul>
 
-  <h3>Data transformations</h3>
-  <p class="yours">[Short summary; the full list is on the main page under "How the numbers were made".]</p>
-  <ul class="draft">
-    <li>GIBS PNGs decoded back to values with each layer's colormap; NDVI requested at 0.01° and averaged into 0.05° blocks; LST at native ~0.05°.</li>
-    <li>Dry season = Jul–Sep; per-year median of the 3 monthly composites; baseline = 2001–03 mean; change = year − baseline; displayed as a 3-year trailing mean.</li>
-    <li>Cleared: NDVI change &lt; −0.20; stable: |change| &lt; 0.05; "year cleared" needs the drop to persist 3 years (notebook rule).</li>
-    <li>Clearing effect = mean ΔLST(cleared) − mean ΔLST(stable) in the same area, which cancels regional warming and drought.</li>
-    <li>Not shown: water and cells with too few valid 1 km pixels (gray).</li>
-  </ul>
+  <h3>Limits</h3>
+  <p>
+    A drop in NDVI is a sign of clearing, not proof, since fire and drought lower it too. Squares are 5&nbsp;km
+    wide, so small clearings are diluted and our cleared area is a lower bound. Values arrive from GIBS already
+    rounded into colour-map bins (0.6&nbsp;°C for temperature). The temperature is that of the surface at
+    about 10:30 in the morning, not the air temperature a weather station would report. And this is
+    observational data: it is consistent with clearing causing the warming, but it does not prove it.
+  </p>
 
-  <!-- ========================================================= -->
   <h2>Development process</h2>
   <h3>How the work was split</h3>
-  <p class="yours">[Who did what. Be specific: data pipeline, map + brushing, scatter / time series, tour + hero, write-up, testing.]</p>
   <ul>
-    <li class="yours">Silas Jude: [ ]</li>
-    <li class="yours">Ethan Lam: [ ]</li>
-    <li class="yours">McAllister Blair: [ ]</li>
-    <li class="yours">Rami Abukhater: [ ]</li>
+    <li><b>Ethan Lam</b> wrote the first exploration notebook, including the code that turns GIBS images back into numbers, which everything after it reuses.</li>
+    <li><b>Silas Jude</b> made the global exploratory figures, set up the repository and GitHub Pages, and built the version with linked maps and the bar-chart year slider.</li>
+    <li><b>McAllister Blair</b> wrote the deforestation notebook that narrowed the topic to the Amazon, and built “The Heat Left Behind”, which is the base of the final page.</li>
+    <li><b>Rami Abukhater</b> built the third version and merged the three into the final submission.</li>
   </ul>
-
   <h3>Time spent</h3>
-  <p class="yours">[Roughly how many people-hours in total, and roughly how they split across exploration, data processing, building, and polish.]</p>
+  <p>About 18 people-hours in total: roughly 5 hours each for Silas, Ethan and McAllister, and 3 hours for Rami.</p>
 
   <h3>What took the most time</h3>
-  <p class="yours">[Your own account.]</p>
-  <ul class="draft">
-    <li>Getting values out of GIBS: it serves colored images, so each pixel's color had to be mapped back to a number with the colormap.</li>
-    <li>Finding the orbit-drift problem in the LST record and deciding to stop at 2022.</li>
-    <li>Choosing the cleared/stable thresholds so the control box shows ~0 cleared squares.</li>
-    <li>Performance: 240,000 squares × 22 years; moving the map to canvas and keeping the linked views responsive.</li>
-    <li>Use of AI tools, if any: <span class="yours">[check the course policy and say how you used them]</span>.</li>
-  </ul>
+  <p>
+    Not the drawing. Most of the time went into getting numbers we could trust: decoding GIBS images, finding
+    out that temperatures after 2022 are not comparable, and choosing thresholds so that the control box shows
+    almost no clearing. In the page itself, the slow parts were the two-way link between the map and the
+    scatter, keeping 240,000 squares redrawing smoothly while a brush is dragged (the map is a canvas, and only
+    the overlays are SVG), and then reconciling three finished designs into one.
+  </p>
 
   <p style="margin-top:40px"><a class="back" href="index.html">← Back to the visualization</a></p>
 </main>

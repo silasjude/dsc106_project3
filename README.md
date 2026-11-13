@@ -1,4 +1,4 @@
-# The Heat Left Behind
+# Exploring vegetation and temperature changes in the Amazon
 
 **DSC 106 Project 3 · Team 11** — Silas Jude, Ethan Lam, McAllister Blair, Rami Abukhater
 
@@ -6,7 +6,17 @@ An interactive D3 visualization of 22 dry seasons (2001–2022) of NASA MODIS da
 where the forest lost greenness (NDVI), and how much hotter the land surface got (daytime LST).
 Cleared 5 km squares warmed about **+3.8 °C** (Rondônia) and **+4.0 °C** (Pará, BR-163) more than stable forest nearby.
 
-Repo: https://github.com/silasjude/dsc106_project3 (branch `heat-left-behind`)
+Repo: https://github.com/silasjude/dsc106_project3 (branch `final-submission`)
+
+## Where the parts came from
+
+This branch combines the team's three builds:
+
+* `heat-left-behind` (base): hero swipe, explorer layout, scatter, time series, tooltip, tour, data pipeline.
+* `viz-forest-loss-heat`: the year slider drawn as a bar chart of land newly cleared each year (drag, click or arrow keys).
+* `interactive-viz`: Brazilian state outlines and labels, and the Northern Mato Grosso preset.
+
+The whole page uses the dark theme of the header.
 
 ## Run locally
 
@@ -21,7 +31,7 @@ python3 -m http.server 8000
 
 1. Push this folder to the root of a **public** repo.
 2. Settings → Pages → Source: *Deploy from a branch* → `main` / `(root)`.
-3. To publish from this branch instead, pick `heat-left-behind` / `(root)` (or merge it into `main`).
+3. To publish from this branch instead, pick `final-submission` / `(root)` (or merge it into `main`).
 
 ## Files
 
@@ -35,7 +45,7 @@ data/meta.json       grid info, region boxes, per-region summaries
 data/static.png      per-square baseline NDVI, baseline LST, clearing year (3 planes of 600×400)
 data/dndvi.png       NDVI change from baseline, one plane per year (22 planes)
 data/dlst.png        LST change from baseline, one plane per year (22 planes)
-data/borders.json country borders (Natural Earth 1:50m via world-atlas)
+data/borders.json    country and Brazilian state borders (Natural Earth 1:50m)
 img/                 MODIS true-color images for the header swipe (NASA GIBS)
 prep/                data pipeline (below)
 ```
