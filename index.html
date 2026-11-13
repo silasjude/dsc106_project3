@@ -1,11 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>When the Forest Goes</title>
+  <meta name="description" content="Satellite data from NASA MODIS shows that land cleared of forest in the southern Amazon heats up, while nearby standing forest barely changes.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
-    
+  <main class="page">
+    <header class="intro">
+      <p class="kicker">Southern Amazon · NASA MODIS · 2001–2022</p>
+      <h1>When the forest goes, the ground heats up</h1>
+      <p class="lede">
+        Rainforest cools itself by evaporating water from its leaves. Pasture can't do that as well.
+        Drag through two decades of satellite data from the Amazon's <em>arc of deforestation</em> and watch
+        temperature follow the clearing.
+      </p>
+    </header>
+
+    <section class="controls" aria-label="Year and season controls">
+      <button id="play" class="btn btn-play" type="button" aria-label="Play animation">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path class="icon-play" d="M4 2.5v11l9-5.5z"/><g class="icon-pause"><rect x="3.5" y="2.5" width="3" height="11" rx="0.5"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.5"/></g></svg>
+      </button>
+      <div class="timeline-wrap">
+        <div class="timeline-head">
+          <span class="year-readout" id="year-readout">2022</span>
+          <span class="timeline-caption">Forest area newly cleared each year — drag or use ← → keys</span>
+        </div>
+        <svg id="timeline" role="slider" tabindex="0" aria-label="Year" aria-valuemin="2001" aria-valuemax="2022" aria-valuenow="2022"></svg>
+      </div>
+      <div class="season" role="group" aria-label="Season">
+        <span class="season-label">Temperature for</span>
+        <div class="segmented">
+          <button type="button" data-season="dry" aria-pressed="true">Dry season <small>Jul–Sep</small></button>
+          <button type="button" data-season="annual" aria-pressed="false">Whole year</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="maps">
+      <figure class="map-card">
+        <figcaption>
+          <h2 id="forest-title">Forest in 2022</h2>
+          <p class="sub" id="forest-sub"></p>
+        </figcaption>
+        <div class="map" id="map-forest">
+          <canvas aria-hidden="true"></canvas>
+          <svg class="overlay" role="img" aria-label="Map of forest cover"></svg>
+        </div>
+        <ul class="legend" id="legend-forest"></ul>
+      </figure>
+      <figure class="map-card">
+        <figcaption>
+          <h2 id="temp-title">Dry-season daytime temperature, 2022</h2>
+          <p class="sub">Land surface temperature compared with the same months in 2001–03</p>
+        </figcaption>
+        <div class="map" id="map-temp">
+          <canvas aria-hidden="true"></canvas>
+          <svg class="overlay" role="img" aria-label="Map of temperature change"></svg>
+        </div>
+        <div class="legend-ramp" id="legend-temp"></div>
+      </figure>
+    </section>
+    <p class="hint" id="selection-hint">Tip: <strong>drag a box</strong> on either map to follow your own patch of land in the chart below. Click once on the map to clear it.</p>
+
+    <section class="charts">
+      <figure class="chart-card chart-main">
+        <figcaption>
+          <h2 id="headline">Cleared land vs. standing forest</h2>
+          <p class="sub" id="headline-sub"></p>
+        </figcaption>
+        <div id="line-chart" class="chart"></div>
+        <ul class="legend" id="legend-lines"></ul>
+      </figure>
+      <figure class="chart-card chart-side">
+        <figcaption>
+          <h2>More forest lost, more heat</h2>
+          <p class="sub" id="dose-sub"></p>
+        </figcaption>
+        <div id="dose-chart" class="chart"></div>
+      </figure>
+    </section>
+
+    <details class="table-view">
+      <summary>Show the numbers as a table</summary>
+      <div class="table-scroll"><table id="data-table"></table></div>
+    </details>
+
+    <section class="notes">
+      <h2>How this was made</h2>
+      <div class="notes-grid">
+        <div>
+          <h3>Data</h3>
+          <p>Monthly MODIS Terra NDVI (~1 km) and daytime land surface temperature (~5 km), 2001–2022, from
+            <a href="https://gibs.earthdata.nasa.gov" rel="noopener">NASA GIBS</a>. GIBS serves colored map images, so
+            values were recovered by reversing each layer's published color map. The region is 66–48°W, 14–5°S:
+            Rondônia, northern Mato Grosso and southern Pará.</p>
+        </div>
+        <div>
+          <h3>Clearing</h3>
+          <p>A 1 km pixel is <em>forest</em> if its dry-season NDVI in 2001–03 was ≥ 0.75. It counts as <em>cleared in year Y</em>
+            when its dry-season NDVI falls ≥ 0.20 below that level and stays down for 3 years. Clearing before 2004 is part of
+            the baseline. Detections in 2021–22 are <strong>provisional</strong> because fewer later years exist to confirm them.</p>
+        </div>
+        <div>
+          <h3>Comparison</h3>
+          <p><em>Cleared</em> = 5 km cells that lost ≥ 30% of their area as forest by 2022. <em>Standing forest</em> = cells that were ≥ 80% forest
+            and lost &lt; 5%. Both groups feel the same regional weather (droughts, El Niño), so the gap between them isolates the effect of clearing.</p>
+        </div>
+        <div>
+          <h3>Caveats</h3>
+          <p>A drop in NDVI can also mean fire or drought damage rather than clearing. The 2010 spike follows a severe drought and fire year.
+            Daytime temperature is measured around 10:30 am, and the record stops in 2022 because the Terra satellite's orbit drifted after that.
+            The pattern is consistent with clearing causing warming, but this is observational data.</p>
+        </div>
+      </div>
+      <p class="credit">DSC 106 · Project 3. Analysis notebooks: <code>exploration.ipynb</code> (Phase 3) and <code>deforestation.ipynb</code>.</p>
+    </section>
+  </main>
+
+  <div class="tooltip" id="tooltip" role="status" aria-live="polite" hidden></div>
+  <pre id="check" hidden></pre>
+  <script src="js/main.js"></script>
 </body>
 </html>
