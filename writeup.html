@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Write-up · The Heat Left Behind</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .wu { max-width: 760px; margin: 0 auto; padding: 48px 20px 60px; font-size: 17px; }
+    .wu h1 { font-family: var(--serif); font-size: 44px; margin: 8px 0 4px; letter-spacing: -.01em; }
+    .wu h2 { font-family: var(--serif); font-weight: 600; font-size: 27px; margin: 40px 0 8px; }
+    .wu h3 { font-size: 17px; margin: 24px 0 6px; }
+    .back { font-weight: 600; text-decoration: none; }
+    /* DRAFT styling: delete this block (and the .draft notes) once the team's own text is in */
+    .draft-banner { background: #fff4c2; border: 1px solid #e6cf6b; border-radius: 8px; padding: 12px 14px; font-size: 15px; margin: 18px 0 8px; }
+    .draft { background: #fffbe6; border-left: 3px solid #e6cf6b; padding: 8px 12px 8px 28px; font-size: 15px; color: #4a4630; margin: 8px 0 14px; }
+    .draft li { margin: 3px 0; }
+    .yours { color: #9a3412; font-style: italic; }
+    table { border-collapse: collapse; font-size: 15px; width: 100%; }
+    td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  </style>
+</head>
+<body>
+<main class="wu">
+  <a class="back" href="index.html">← Back to the visualization</a>
+  <h1>Write-up</h1>
+  <p class="muted">The Heat Left Behind · DSC 106 Project 3 · Team 11</p>
+
+  <div class="draft-banner"><b>TEAM: draft notes, not final text.</b> The yellow boxes list the facts each section should cover.
+    Write each section in your own words, replace every <span class="yours">[bracket]</span>, then delete the yellow boxes and the <code>&lt;style&gt;</code> block marked DRAFT.
+    (The rubric caps a write-up that reads as AI-generated at 2/3.)</div>
+
+  <!-- ========================================================= -->
+  <h2>Motivation</h2>
+  <p class="yours">[2–4 sentences, your words: why we picked this question and what a reader should take away.]</p>
+  <ul class="draft">
+    <li>Question: does losing forest cover make the land surface measurably hotter, and by how much?</li>
+    <li>Mechanism to mention: forests cool the surface through evapotranspiration; pasture moves less water, so more sunlight becomes heat.</li>
+    <li>Headline result (2020–22 vs 2001–03, dry season): cleared squares warmed about 3.8 °C more than stable forest nearby in Rondônia and about 4.0 °C more along BR-163 in Pará. Same as our checkpoint notebook (3.83 and 4.01).</li>
+    <li>Link back to the checkpoint: we started from global NDVI/LST maps, narrowed to the Amazon, then to the cleared-vs-stable comparison.</li>
+  </ul>
+
+  <!-- ========================================================= -->
+  <h2>Design rationale</h2>
+
+  <h3>Visual encodings</h3>
+  <p class="yours">[Explain each choice and why. Use the table as a checklist, not as the final text.]</p>
+  <table class="draft">
+    <tr><th>Element</th><th>Encoding</th><th>Reasoning to put in your own words</th></tr>
+    <tr><td>Map</td><td>Position = geography; one 5 km square = one pixel (canvas)</td><td>Spatial pattern (roads, the "arc") is the story; canvas because ~240,000 SVG rects would be too slow to animate.</td></tr>
+    <tr><td>Greenness change</td><td>Diverging brown ↔ teal (ColorBrewer BrBG), neutral middle = no change, ends at ±0.3</td><td>The data has a sign (loss vs gain), so diverging; brown reads as bare or dry land. Ends at ±0.3 so a few extreme squares don't wash out everything else. Same scale as our notebook.</td></tr>
+    <tr><td>Temperature change</td><td>Diverging blue ↔ red (RdBu), ends at ±5 °C</td><td>Conventional hot/cold; same neutral middle so "no change" looks alike on both maps.</td></tr>
+    <tr><td>Year cleared</td><td>Sequential light → dark (YlOrBr), 2004–2022</td><td>Ordered quantity → one-hue ramp, not a rainbow. Brown family links it to greenness loss.</td></tr>
+    <tr><td>Scatter</td><td>2-D histogram (binned squares, log color), median line, group means + bracket</td><td>Plotting ~230k points overplots badly (an expressiveness problem). Binning shows density. The median line shows the trend, and the bracket shows the effect size directly.</td></tr>
+    <tr><td>Time series</td><td>Lines for cleared / stable / intact control on one °C axis; separate area chart for % area cleared</td><td>We avoided a dual axis. Different units get separate charts. Lines are labeled directly so color isn't the only cue.</td></tr>
+    <tr><td>Region colors</td><td>Rondônia blue, Pará orange, control gray</td><td>Kept from the notebook; the control is gray because it's a reference, not a story.</td></tr>
+  </table>
+
+  <h3>Interaction techniques</h3>
+  <p class="yours">[For each technique: what it lets the reader discover that a static chart couldn't.]</p>
+  <ul class="draft">
+    <li><b>Time slider + play</b> (dynamic query over 2001–2022): shows clearing spreading out from roads, which a single before/after map hides.</li>
+    <li><b>Brushing and linking</b>: box on the map → scatter, time series and readout update for that area. Box on the scatter → only those squares stay lit on the map (e.g. box the "cleared" tail and you see the fishbone road pattern).</li>
+    <li><b>Details on demand</b>: hover tooltip with a square's 22-year greenness and temperature history; you can see the year it was cleared and the temperature jump right after.</li>
+    <li><b>Presets</b> (Rondônia, Pará, intact control): one click to the comparisons from our analysis; the control shows the background trend.</li>
+    <li><b>Guided tour</b> (6 steps): narrative layer that sets the state for each finding; the reader can leave at any point and explore.</li>
+    <li><b>Satellite swipe</b> in the header: real MODIS true-color images 2001 vs 2021, as a hook before the data.</li>
+  </ul>
+
+  <h3>Alternatives we considered</h3>
+  <p class="yours">[Pick the ones you actually discussed; add your own.]</p>
+  <ul class="draft">
+    <li>Two side-by-side static maps (NDVI change, LST change): clear, but no way to quantify the link or look at a sub-region.</li>
+    <li>A plain point scatter: unreadable at this size; a hexbin needs the d3-hexbin plugin (not core D3), so we used square bins.</li>
+    <li>One dual-axis chart of NDVI and LST over time: rejected, since dual axes suggest correlations through arbitrary scaling.</li>
+    <li>Single-year frames: too noisy (2005, 2010, 2015–16 droughts) → 3-year trailing average.</li>
+    <li>Extending to 2026: rejected after finding the Terra orbit drift (control forest "cools" 1–2 °C in 2025–26).</li>
+    <li>CMIP6 model projections: we wanted observed change, so we used MODIS.</li>
+  </ul>
+
+  <h3>Data transformations</h3>
+  <p class="yours">[Short summary; the full list is on the main page under "How the numbers were made".]</p>
+  <ul class="draft">
+    <li>GIBS PNGs decoded back to values with each layer's colormap; NDVI requested at 0.01° and averaged into 0.05° blocks; LST at native ~0.05°.</li>
+    <li>Dry season = Jul–Sep; per-year median of the 3 monthly composites; baseline = 2001–03 mean; change = year − baseline; displayed as a 3-year trailing mean.</li>
+    <li>Cleared: NDVI change &lt; −0.20; stable: |change| &lt; 0.05; "year cleared" needs the drop to persist 3 years (notebook rule).</li>
+    <li>Clearing effect = mean ΔLST(cleared) − mean ΔLST(stable) in the same area, which cancels regional warming and drought.</li>
+    <li>Not shown: water and cells with too few valid 1 km pixels (gray).</li>
+  </ul>
+
+  <!-- ========================================================= -->
+  <h2>Development process</h2>
+  <h3>How the work was split</h3>
+  <p class="yours">[Who did what. Be specific: data pipeline, map + brushing, scatter / time series, tour + hero, write-up, testing.]</p>
+  <ul>
+    <li class="yours">Silas Jude: [ ]</li>
+    <li class="yours">Ethan Lam: [ ]</li>
+    <li class="yours">McAllister Blair: [ ]</li>
+    <li class="yours">Rami Abukhater: [ ]</li>
+  </ul>
+
+  <h3>Time spent</h3>
+  <p class="yours">[Roughly how many people-hours in total, and roughly how they split across exploration, data processing, building, and polish.]</p>
+
+  <h3>What took the most time</h3>
+  <p class="yours">[Your own account.]</p>
+  <ul class="draft">
+    <li>Getting values out of GIBS: it serves colored images, so each pixel's color had to be mapped back to a number with the colormap.</li>
+    <li>Finding the orbit-drift problem in the LST record and deciding to stop at 2022.</li>
+    <li>Choosing the cleared/stable thresholds so the control box shows ~0 cleared squares.</li>
+    <li>Performance: 240,000 squares × 22 years; moving the map to canvas and keeping the linked views responsive.</li>
+    <li>Use of AI tools, if any: <span class="yours">[check the course policy and say how you used them]</span>.</li>
+  </ul>
+
+  <p style="margin-top:40px"><a class="back" href="index.html">← Back to the visualization</a></p>
+</main>
+</body>
+</html>
