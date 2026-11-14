@@ -41,26 +41,28 @@
 
   <h3>Data transformations</h3>
   <ul>
-    <li><b>Decoding.</b> NASA GIBS serves coloured images, not numbers. We matched every pixel colour back to
-      a value with each layer's published colour map. NDVI was requested at 0.01° and averaged into 0.05°
-      squares (about 5.5&nbsp;km) so it sits on the same grid as temperature.</li>
-    <li><b>Dry season only.</b> Each year is the median of July, August and September. Forest stays green in
-      the dry season and pasture dries out, so the contrast is largest then, and the wet season is too cloudy
-      to use. A median of three months survives one bad month.</li>
-    <li><b>Change, not level.</b> Everything is shown as the difference from the same square's 2001–03
-      average. Raw temperature mostly reflects elevation and latitude, and subtracting each square's own
-      baseline removes that.</li>
-    <li><b>Three-year averages.</b> The map shows the three years ending at the selected year,
-      because single years swing with drought and smoke (2005, 2010, 2015–16).</li>
-    <li><b>Cleared and stable.</b> A square is cleared when its NDVI is more than 0.20 below baseline, and
-      stable when it is within 0.05. We picked 0.20 because almost no squares in our untouched control box
-      fall that far, so it sits outside normal noise.</li>
-    <li><b>Clearing effect.</b> The headline number is the average temperature change of cleared squares
-      minus that of stable squares in the same area. Regional warming and drought hit both groups, so the
-      subtraction leaves what clearing added.</li>
-    <li><b>Stopping at 2022.</b> Terra's orbit has drifted since then, so it passes over earlier in the
-      morning and reads cooler. Our checkpoint plot of the Sahara showed the same artificial drop, so we cut
-      the record there.</li>
+    <li><b>Decoding.</b> The layers come as colored pixels, so we used each layer's published color map to turn
+      every pixel back into an actual value. We pulled NDVI at 0.01° and then averaged it up into 0.05° squares
+      (roughly 5.5&nbsp;km) so it lines up with the temperature grid.</li>
+    <li><b>Dry season only.</b> Each year is the median of July, August and September. In the dry season forest
+      stays green while pasture dries out, so that's when the difference between them is biggest. The wet season
+      is also way too cloudy to use. Using the median of three months means one bad month doesn't throw off the
+      whole year.</li>
+    <li><b>Change, not level.</b> Everything is shown as how much a square changed from its own 2001–03 average.
+      Raw temperature mostly just reflects elevation and latitude, so subtracting each square's own baseline
+      gets rid of that.</li>
+    <li><b>Three-year averages.</b> The map shows the average of the three years ending at whatever year you pick.
+      Single years jump around a lot because of drought and smoke (2005, 2010, 2015–16), so averaging smooths
+      that out.</li>
+    <li><b>Cleared and stable.</b> We call a square cleared if its NDVI dropped more than 0.20 below its baseline,
+      and stable if it stayed within 0.05. We went with 0.20 because almost none of the squares in our untouched
+      control box ever drop that far, so anything past it isn't just normal noise.</li>
+    <li><b>Clearing effect.</b> The main number is the average temperature change in cleared squares minus the
+      average in stable squares from the same area. Regional warming and drought hit both groups, so subtracting
+      one from the other leaves just the part that came from clearing.</li>
+    <li><b>Stopping at 2022.</b> After 2022, Terra's orbit drifted enough that it passes over earlier in the
+      morning, which makes temperatures read cooler than they really are. Our Sahara checkpoint plot showed the
+      same fake drop, so we cut the data off there.</li>
   </ul>
   <p>These steps are also listed on the main page under “How the numbers were made”, and the map's subtitle says which ones apply to the current view.</p>
 
