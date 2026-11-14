@@ -28,7 +28,7 @@
     A forest cools the ground by moving water from the soil into the air, and pasture
     moves much less water, so more sunlight ends up as heat. We wanted readers to be able to check that claim
     themselves on real measurements, place by place and year by year, and to come away with a number. In our
-    data, land that was cleared ended up roughly 4&nbsp;°C hotter in the dry season than forest next to it that
+    data, land that was cleared ended up roughly 4 °C hotter in the dry season than forest next to it that
     was left standing.
   </p>
   <p>
@@ -43,37 +43,36 @@
   <ul>
     <li><b>Decoding.</b> The layers come as colored pixels, so we used each layer's published color map to turn
       every pixel back into an actual value. We pulled NDVI at 0.01° and then averaged it up into 0.05° squares
-      (roughly 5.5&nbsp;km) so it lines up with the temperature grid.</li>
+      (roughly 5.5 km) so it lines up with the temperature grid.</li>
     <li><b>Dry season only.</b> Each year is the median of July, August and September. In the dry season forest
       stays green while pasture dries out, so that's when the difference between them is biggest. The wet season
-      is also way too cloudy to use. Using the median of three months means one bad month doesn't throw off the
+      is also way too cloudy to use. Using the median of three months means outliers don't throw off the
       whole year.</li>
-    <li><b>Change, not level.</b> Everything is shown as how much a square changed from its own 2001–03 average.
+    <li><b>Change rather than Value.</b> Everything is shown as how much a square changed from its own 2001–03 average.
       Raw temperature mostly just reflects elevation and latitude, so subtracting each square's own baseline
       gets rid of that.</li>
     <li><b>Three-year averages.</b> The map shows the average of the three years ending at whatever year you pick.
-      Single years jump around a lot because of drought and smoke (2005, 2010, 2015–16), so averaging smooths
+      Single years jump around a lot because of drought and smoke (2005, 2010, 2015, 2016), so averaging smooths
       that out.</li>
     <li><b>Cleared and stable.</b> We call a square cleared if its NDVI dropped more than 0.20 below its baseline,
       and stable if it stayed within 0.05. We went with 0.20 because almost none of the squares in our untouched
       control box ever drop that far, so anything past it isn't just normal noise.</li>
     <li><b>Clearing effect.</b> The main number is the average temperature change in cleared squares minus the
       average in stable squares from the same area. Regional warming and drought hit both groups, so subtracting
-      one from the other leaves just the part that came from clearing.</li>
+      one from the other leaves just the relative part that can be more easily attributed to clearing.</li>
     <li><b>Stopping at 2022.</b> After 2022, Terra's orbit drifted enough that it passes over earlier in the
       morning, which makes temperatures read cooler than they really are. Our Sahara checkpoint plot showed the
       same fake drop, so we cut the data off there.</li>
   </ul>
-  <p>These steps are also listed on the main page under “How the numbers were made”, and the map's subtitle says which ones apply to the current view.</p>
 
   <h3>Visual encodings</h3>
   <ul>
-    <li><b>Map.</b> Position is geography, and each 5&nbsp;km square is one pixel. Change has a direction and a
-      real zero, so both change layers use a diverging colour scale with a pale middle: brown to teal for
-      greenness (brown reads as bare ground) and blue to red for temperature. The scales end at ±0.3 NDVI and
-      ±5&nbsp;°C so that a few extreme squares do not wash out everything else. Water and missing data are a
-      dark grey that is on neither scale.</li>
-    <li><b>One map, two layers.</b> Greenness and temperature use the same grid, so toggling between them
+    <li><b>Map.</b> Position is geography, and each 5 km square is one pixel. Change has a direction and a
+      zero, so both change layers use a diverging colour scale with a pale middle: brown to teal for
+      greenness (brown reads as bare ground) and blue to red for temperature. Both are fairly standard and easily
+      interpretable. The scales end at ±0.3 NDVI and ±5 °C so that individual extreme outliers don't wash out
+      everything else. Water and missing data are a dark grey that is on neither scale.</li>
+    <li><b>Two lauers.</b> Greenness and temperature use the same grid, so toggling between them
       keeps every square in place and the eye can match the brown patches to the red ones.</li>
     <li><b>Readout.</b> The answer to our question is a single number per area (cleared minus stable warming),
       so it is shown as a large number beside the map and updates with the region and year.</li>
@@ -84,24 +83,22 @@
   <h3>Interaction techniques</h3>
   <ul>
     <li><b>Year slider and play button.</b> Dragging the slider or pressing play steps through the years, which
-      shows clearing spreading out from the roads and the heat following it. A single before-and-after map hides
-      that.</li>
+      shows clearing spreading out from the roads and the heat following it. This couldn't be shown as effectively
+      with just a before/after.</li>
     <li><b>Layer toggle</b> switches the map between greenness change and temperature change, so the reader
       can see that the places that lost the most green are the places that got hottest.</li>
     <li><b>Region buttons</b> pick the area the readout summarizes, and the map zooms in on it so the
-      reader can see the individual cleared patches. Choosing "Whole map" zooms back out. The intact control is
-      the important one, because it shows how little happens where nothing was cut.</li>
-    <li><b>Hover</b> averages the squares inside a small circle (about 15&nbsp;km across) that follows the
+      reader can see the individual cleared patches. Choosing "Whole map" zooms back out.</li>
+    <li><b>Hover</b> averages the squares inside a small circle (about 15 km across) that follows the
       pointer, and shows the share of that area cleared since 2004 followed by its greenness and temperature
-      change. Single 5&nbsp;km squares were too precise to aim at
-      and flickered with every small mouse movement; larger fixed blocks were hard to read.</li>
+      change.</li>
   </ul>
 
   <h3>Alternatives we considered</h3>
   <ul>
-    <li><b>Three separate designs.</b> Each of three of us built a full version on a branch: this one, a
-      version with two maps side by side and a bar-chart year slider, and a lighter version with a one-direction
-      scatter brush. We merged them, keeping the first as the base and taking the state outlines and the
+    <li><b>Alternative designs.</b> Three of us built our own baseline versions on seperate branches: the predecessor
+      to this one, a version with two maps side by side and a bar-chart year slider, and a lighter version with a
+      one-direction scatter brush. We merged them, keeping the first as the base and taking the state outlines and the
       Mato Grosso region from the third.</li>
     <li><b>A larger multi-view dashboard.</b> Our merged build also had a brushable greenness-vs-temperature
       scatter, a cleared-vs-stable time series, a "year cleared" map layer, drag-to-select on the map, a
@@ -111,19 +108,19 @@
       large map with a toggle.</li>
     <li><b>A bar-chart year slider.</b> An earlier build used a bar chart of newly cleared land as the slider.
       It added information, but it was a second chart to read, so we went back to a plain slider.</li>
-    <li><b>A light page.</b> Our first builds were light. The dark version won when we put them next to each other.</li>
+    <li><b>A light page.</b> Our first builds were light, but we ultimately preferred the dark background.</li>
     <li><b>One dual-axis chart of NDVI and temperature.</b> Rejected, because the apparent relationship would
-      depend on how we scaled the two axes.</li>
+      depend completely on how we scaled the two axes.</li>
     <li><b>Extending to 2026.</b> Rejected after we found the orbit drift.</li>
   </ul>
 
   <h3>Limits</h3>
   <p>
-    A drop in NDVI is a sign of clearing, not proof, since fire and drought lower it too. Squares are 5&nbsp;km
+    A drop in NDVI is a sign of clearing, not proof, since fire and drought lower it too. Squares are 5 km
     wide, so small clearings are diluted and our cleared area is a lower bound. Values arrive from GIBS already
-    rounded into colour-map bins (0.6&nbsp;°C for temperature). The temperature is that of the surface at
+    rounded into colour-map bins (0.6 °C for temperature). The temperature is that of the surface at
     about 10:30 in the morning, not the air temperature a weather station would report. And this is
-    observational data: it is consistent with clearing causing the warming, but it does not prove it.
+    observational data, so while it's consistent with clearing causing the warming, it doesn't prove it.
   </p>
 
   <h2>Development process</h2>
