@@ -81,22 +81,21 @@
 <section class="intro prose">
   <h2>Why would clearing forests heat the ground?</h2>
   <p>A rainforest is crucial for keeping the ground cooler. Trees take water from the soil and release it through their leaves. When that water evaporates, it carries heat away from the ground, cooling the surface. Because pasture and cropland move much less water compared to forests, more of the sun's energy goes into heating the surface.</p>
-  <p>Since 2000, NASA's MODIS instrument on the Terra satellite has tracked how green the land is using a Normalized Difference Vegetation Index (NDVI) and how hot the land surface is at about 10:30 in the morning, local time. The data is for each 5 km square, carrying both numbers for every dry season from 2001 to 2022.</p>
+  <p>Since 2000, NASA's MODIS instrument on the Terra satellite has tracked how green the land is using a Normalized Difference Vegetation Index (NDVI) and how hot the land surface is at about 10:30 in the morning, local time. Each 5 km square contains both numbers for every dry season from 2001 to 2022.</p>
 </section>
 
 <!-- ============================== METHODS ============================== -->
 <section class="methods prose" id="methods">
   <h2>How the numbers were made</h2>
   <ol class="steps">
-    <li><b>Source.</b> NASA MODIS on the Terra satellite: monthly NDVI (~1 km) and monthly daytime land surface temperature (~5 km), July–September of every year, downloaded through NASA GIBS and decoded from color back to values with each layer's published colormap.</li>
-    <li><b>Grid.</b> 75°W–45°W, 18°S–2°N, cut into 0.05° squares (about 5.5 km). A square's NDVI is the mean of the ~25 one-km pixels inside it.</li>
-    <li><b>Dry season.</b> One value per square per year: the median of the July, August and September composites. The dry season has the fewest clouds, and it is when pasture and forest differ most.</li>
-    <li><b>Change.</b> Each year minus that square's own 2001–2003 average. The map and charts show a <b>3-year average ending in the selected year</b>, which smooths out single drought years (2005, 2010, 2015–16).</li>
-    <li><b>Cleared / stable.</b> A square counts as <span class="tag tag-cleared">cleared</span> when its greenness fell more than 0.20 below baseline, and <span class="tag tag-stable">stable</span> when it moved less than 0.05 either way.</li>
-    <li><b>Clearing effect.</b> Average temperature change of cleared squares minus that of stable squares <em>in the same area</em>. Regional warming and drought hit both groups, so subtracting cancels them out and leaves what clearing added.</li>
-    <li><b>Why stop at 2022.</b> Terra's orbit has been drifting since 2022, so it now passes over earlier in the morning, when the ground is cooler. Untouched forest in our control box "cooled" by 1–2 °C in 2025–26 for that reason alone, so later years would mislead.</li>
+    <li><b>Source.</b> NASA MODIS on the Terra satellite. We used monthly NDVI (with 1 km detail) and monthly daytime land surface temperature (with 5 km detail) for July to September of every year. We downloaded the data through NASA GIBS and decoded it from color back to values using each layer's published colormap.</li>
+    <li><b>Grid.</b> The grid is formed by an area from 75°W to 45°W and 18°S to 2°N, split into 0.05° squares (roughly 5.5 km). A square's NDVI is the mean of the ~25 one-km pixels inside it. This averages the finer NDVI data to make the tooltip less sensitive.</li>
+    <li><b>Dry season.</b> Each square gets one value per year (the median of the July, August and September composites). The dry season has the fewest clouds, and is when pasture and forest differ the most.</li>
+    <li><b>Change.</b> Measured by the selected year's value minus that square's own 2001–2003 average. The map shows a 3-year average ending in the selected year, so a drought year (2005, 2010, 2015–16) does not skew the general picture.</li>
+    <li><b>Cleared.</b> A square counts as cleared when its greenness fell more than 0.20 below baseline.</li>
+    <li><b>Why end at 2022?</b> Terra's orbit has been shifting since 2022, so it passes earlier in the morning when the ground is cooler. Because of this, our control box (untouched forest) appears to be 1–2 °C cooler in 2025–26.</li>
   </ol>
-  <p class="caveat"><b>Limits.</b> 5 km squares blur small clearings, so cleared area here is a lower bound. A drop in NDVI can also come from fire or drought (the 3-year persistence rule and the stable-square comparison limit this but can't remove it). LST is a skin temperature at one time of day, not air temperature.</p>
+  <p class="caveat"><b>Limits.</b> Squares 5km large can blur smaller clearings. A drop in NDVI can also come from fire or drought (the 3-year rule and the stable comparison minimize this but the issue is not eliminated). Also, LST is a skin temperature at one time of day, not the air temperature.</p>
   <p class="links"><a href="writeup.html">Write-up: design rationale &amp; development process →</a> · <a href="https://github.com/silasjude/dsc106_project3">Source code on GitHub</a></p>
 </section>
 </main>
