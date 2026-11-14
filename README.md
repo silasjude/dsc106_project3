@@ -40,13 +40,13 @@ index.html           page: hero, explorer, methods
 writeup.html         design rationale + development process
 css/style.css
 js/d3.v7.min.js      D3 v7.9 (bundled locally; the only library used)
-js/main.js           all visualization code (map, scatter, time series, tooltip, swipe, tour)
+js/main.js           all visualization code (map, year slider, tooltip, readout)
 data/meta.json       grid info, region boxes, per-region summaries
 data/static.png      per-square baseline NDVI, baseline LST, clearing year (3 planes of 600×400)
 data/dndvi.png       NDVI change from baseline, one plane per year (22 planes)
 data/dlst.png        LST change from baseline, one plane per year (22 planes)
 data/borders.json    country and Brazilian state borders (Natural Earth 1:50m)
-img/                 MODIS true-color images for the header swipe (NASA GIBS)
+img/                 MODIS true-color images (no longer used on the page)
 prep/                data pipeline (below)
 ```
 

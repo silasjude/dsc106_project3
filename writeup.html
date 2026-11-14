@@ -4,9 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Write-up · Exploring vegetation and temperature changes in the Amazon</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <style>
     .wu { max-width: 760px; margin: 0 auto; padding: 48px 20px 60px; font-size: 17px; color: var(--ink2); }
@@ -53,12 +50,11 @@
     <li><b>Change, not level.</b> Everything is shown as the difference from the same square's 2001–03
       average. Raw temperature mostly reflects elevation and latitude, and subtracting each square's own
       baseline removes that.</li>
-    <li><b>Three-year averages.</b> The map and scatter show the three years ending at the selected year,
+    <li><b>Three-year averages.</b> The map shows the three years ending at the selected year,
       because single years swing with drought and smoke (2005, 2010, 2015–16).</li>
     <li><b>Cleared and stable.</b> A square is cleared when its NDVI is more than 0.20 below baseline, and
       stable when it is within 0.05. We picked 0.20 because almost no squares in our untouched control box
-      fall that far, so it sits outside normal noise. For the “year cleared” map the drop also has to last
-      three years.</li>
+      fall that far, so it sits outside normal noise.</li>
     <li><b>Clearing effect.</b> The headline number is the average temperature change of cleared squares
       minus that of stable squares in the same area. Regional warming and drought hit both groups, so the
       subtraction leaves what clearing added.</li>
@@ -66,7 +62,7 @@
       morning and reads cooler. Our checkpoint plot of the Sahara showed the same artificial drop, so we cut
       the record there.</li>
   </ul>
-  <p>These steps are also listed on the main page under “How the numbers were made”, and each chart's subtitle says which ones apply to it.</p>
+  <p>These steps are also listed on the main page under “How the numbers were made”, and the map's subtitle says which ones apply to the current view.</p>
 
   <h3>Visual encodings</h3>
   <ul>
@@ -75,53 +71,44 @@
       greenness (brown reads as bare ground) and blue to red for temperature. The scales end at ±0.3 NDVI and
       ±5&nbsp;°C so that a few extreme squares do not wash out everything else. Water and missing data are a
       dark grey that is on neither scale.</li>
-    <li><b>Year cleared.</b> Year is an ordered quantity, so it gets a single ramp from deep orange (2004) to
-      pale yellow (2022). On the dark page this makes the newest clearing the brightest thing on the map.</li>
-    <li><b>Scatter.</b> The relationship between the two measures is the answer to our question, so it gets
-      position on both axes. About 230,000 points would overplot into a blob, so we bin them into rectangles
-      and colour by count on a log scale, which keeps the thin tail of heavily cleared squares visible next
-      to the huge pile near zero. The white line is the median temperature change in each slice of greenness
-      change, and the bracket marks the clearing effect directly on the chart.</li>
-    <li><b>Time series.</b> Cleared, stable and the intact control share one °C axis and are labelled at the
-      line ends, so colour is not the only cue. The share of land cleared has different units, so it has its
-      own small chart under the lines. We did not want a dual axis.</li>
-    <li><b>Black background.</b> The header photo is dark satellite imagery, and we carried that through the
-      whole page. Against black, the map and the lit squares in a selection are the brightest things on
-      screen, which is where we want the eye. We rechecked every chart colour for contrast after the switch;
-      the cleared and stable lines became a lighter coral and teal.</li>
+    <li><b>One map, two layers.</b> Greenness and temperature use the same grid, so toggling between them
+      keeps every square in place and the eye can match the brown patches to the red ones.</li>
+    <li><b>Readout.</b> The answer to our question is a single number per area (cleared minus stable warming),
+      so it is shown as a large number beside the map and updates with the region and year.</li>
+    <li><b>Dark background.</b> Against black, the map is the brightest thing on screen, which is where we
+      want the eye.</li>
   </ul>
 
   <h3>Interaction techniques</h3>
   <ul>
-    <li><b>Year slider that is also a chart.</b> The slider is a bar chart of how much land was newly cleared
-      each year in the selected area. It shows when the clearing happened before you drag, and dragging or
-      pressing play shows it spreading out from the roads, which a single before-and-after map hides.</li>
-    <li><b>Brushing the map</b> filters the scatter, the lines, the readout and the slider's bars to that
-      area. This is how a reader tests the claim locally: a clearing frontier and an untouched block give
-      visibly different pictures.</li>
-    <li><b>Brushing the scatter</b> goes the other way and shows where a part of the distribution lives. Box
-      the hot, cleared corner and only those squares stay lit on the map, strung along the highways. A static
-      figure can show that the two measures are correlated, but not this.</li>
-    <li><b>Hover</b> gives one square's 22-year history of greenness and temperature, including the year it
-      was cleared.</li>
-    <li><b>Presets</b> jump to the areas from our analysis. The intact control is the important one, because
-      it shows how little happens where nothing was cut.</li>
-    <li><b>The tour</b> sets up the view for each finding in order, and the reader can leave it at any step.</li>
-    <li><b>The satellite swipe</b> at the top is a hook: two real photographs of Rondônia twenty years apart,
-      before any abstract data.</li>
+    <li><b>Year slider and play button.</b> Dragging the slider or pressing play steps through the years, which
+      shows clearing spreading out from the roads and the heat following it. A single before-and-after map hides
+      that.</li>
+    <li><b>Layer toggle</b> switches the map between greenness change and temperature change, so the reader
+      can see that the places that lost the most green are the places that got hottest.</li>
+    <li><b>Region buttons</b> pick the area the readout summarizes, and the map zooms in on it so the
+      reader can see the individual cleared patches. Choosing "Whole map" zooms back out. The intact control is
+      the important one, because it shows how little happens where nothing was cut.</li>
+    <li><b>Hover</b> averages the squares inside a small circle (about 15&nbsp;km across) that follows the
+      pointer, and shows the share of that area cleared since 2004 followed by its greenness and temperature
+      change. Single 5&nbsp;km squares were too precise to aim at
+      and flickered with every small mouse movement; larger fixed blocks were hard to read.</li>
   </ul>
 
   <h3>Alternatives we considered</h3>
   <ul>
     <li><b>Three separate designs.</b> Each of three of us built a full version on a branch: this one, a
       version with two maps side by side and a bar-chart year slider, and a lighter version with a one-direction
-      scatter brush. The final page keeps the first as the base and takes the slider from the second and the
-      state outlines and extra preset from the third.</li>
-    <li><b>Two maps side by side.</b> Easy to compare at a glance, but each map is half the size, and the
-      scatter does the same comparison more precisely. We kept one large map with a toggle.</li>
-    <li><b>A plain range slider.</b> It works, but it tells you nothing until you move it.</li>
-    <li><b>A plain point scatter, or hexagonal bins.</b> Points are unreadable at this size. Hexagons need a
-      plugin outside core D3, and rectangles line up with the axis ticks and the brush edges.</li>
+      scatter brush. We merged them, keeping the first as the base and taking the state outlines and the
+      Mato Grosso region from the third.</li>
+    <li><b>A larger multi-view dashboard.</b> Our merged build also had a brushable greenness-vs-temperature
+      scatter, a cleared-vs-stable time series, a "year cleared" map layer, drag-to-select on the map, a
+      guided tour and a before/after satellite photo. The assignment asks for one focused graphic, so we cut
+      back to the map and kept only the interactions that serve our question.</li>
+    <li><b>Two maps side by side.</b> Easy to compare at a glance, but each map is half the size. We kept one
+      large map with a toggle.</li>
+    <li><b>A bar-chart year slider.</b> An earlier build used a bar chart of newly cleared land as the slider.
+      It added information, but it was a second chart to read, so we went back to a plain slider.</li>
     <li><b>A light page.</b> Our first builds were light. The dark version won when we put them next to each other.</li>
     <li><b>One dual-axis chart of NDVI and temperature.</b> Rejected, because the apparent relationship would
       depend on how we scaled the two axes.</li>
@@ -152,9 +139,9 @@
   <p>
     Not the drawing. Most of the time went into getting numbers we could trust: decoding GIBS images, finding
     out that temperatures after 2022 are not comparable, and choosing thresholds so that the control box shows
-    almost no clearing. In the page itself, the slow parts were the two-way link between the map and the
-    scatter, keeping 240,000 squares redrawing smoothly while a brush is dragged (the map is a canvas, and only
-    the overlays are SVG), and then reconciling three finished designs into one.
+    almost no clearing. In the page itself, the slow parts were keeping 240,000 squares redrawing smoothly as
+    the year changes (the map is a canvas, and only the overlays are SVG), and then reconciling three
+    finished designs into one and cutting it back to a single graphic.
   </p>
 
   <p style="margin-top:40px"><a class="back" href="index.html">← Back to the visualization</a></p>
