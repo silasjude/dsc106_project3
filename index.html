@@ -5,146 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Exploring vegetation and temperature changes in the Amazon</title>
   <meta name="description" content="An interactive look at 22 years of MODIS satellite data: where the southern Amazon lost its forest, and how much hotter the ground got.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- ============================== HERO ============================== -->
+<!-- ============================== HEADER ============================== -->
 <header class="hero">
   <div class="hero-inner">
     <p class="kicker">DSC 106 · Project 3 · Team 11</p>
     <h1>Exploring vegetation and temperature changes in the Amazon</h1>
-    <p class="dek">When the Amazon rainforest is cut down, the ground underneath gets hotter. Twenty-two years of NASA satellite data show how much.</p>
-
-    <figure class="swipe-figure">
-      <div id="swipe" class="swipe" role="img" aria-label="MODIS true-color satellite images of central Rondônia, Brazil, in August 2001 and July 2021. A slider reveals one or the other."></div>
-      <figcaption>
-        <strong>Drag the handle.</strong> Central Rondônia, Brazil, seen by NASA's Terra satellite on 2 Aug 2001 and 13 Jul 2021 (about 330 × 330 km).
-        The thin "fishbone" lines are roads cut into the forest; tan patches along them are cleared land.
-        <span class="muted">MODIS Corrected Reflectance (true color), via NASA GIBS; brightened for display.</span>
-      </figcaption>
-    </figure>
-
-    <div class="hero-stats" id="hero-stats" aria-live="polite">
-      <div class="stat"><span class="stat-num" data-stat="rondonia">+3.8 °C</span><span class="stat-label">extra dry-season warming of cleared land vs. nearby forest, <b>Rondônia</b></span></div>
-      <div class="stat"><span class="stat-num" data-stat="para">+4.0 °C</span><span class="stat-label">the same comparison along the <b>BR-163</b> highway, Pará</span></div>
-      <div class="stat"><span class="stat-num" data-stat="control">+0.7 °C</span><span class="stat-label">how much <b>untouched forest</b> warmed over the same years</span></div>
-    </div>
-    <a class="scroll-cue" href="#explore">Explore the data <span aria-hidden="true">↓</span></a>
+    <p class="question"><b>Question:</b> does losing forest cover make the land surface measurably hotter, and by how much?</p>
   </div>
 </header>
 
 <main>
-<!-- ============================== INTRO ============================== -->
-<section class="intro prose">
-  <p>A rainforest works like an evaporative cooler. Trees pull water from the soil and breathe it out through their leaves, and that evaporation carries heat away from the ground. Pasture and cropland move much less water, so more of the sun's energy goes into heating the surface.</p>
-  <p>NASA's MODIS instrument on the Terra satellite has measured both sides of this since 2000: how <em>green</em> the land is (<abbr title="Normalized Difference Vegetation Index">NDVI</abbr>) and how <em>hot</em> the land surface is at about 10:30 am local time (land surface temperature, LST). Below, each 5 km square of the southern Amazon carries both numbers for every dry season from 2001 to 2022.</p>
-  <p class="question"><b>Our question:</b> does losing forest cover make the land surface measurably hotter, and by how much?</p>
-</section>
+<!-- ============================== VISUALIZATION ============================== -->
+<section id="explore" class="explorer" aria-label="Interactive map">
+  <div class="viz">
+    <aside class="panel">
+      <div class="viz-head">
+        <h2 id="map-title">Change in dry-season greenness (NDVI)</h2>
+        <p class="viz-sub" id="map-sub"></p>
+      </div>
 
-<!-- ============================== EXPLORER ============================== -->
-<section id="explore" class="explorer" aria-label="Interactive explorer">
-  <div class="explorer-head">
-    <div>
-      <h2>Explore 22 dry seasons, 5 km at a time</h2>
-      <p class="sub">Each square is about 5.5 × 5.5 km. All values are July–September (dry-season) averages compared with the same square's 2001–2003 baseline.</p>
-    </div>
-    <button id="tour-btn" class="btn btn-accent" type="button">▶ Take the 60-second tour</button>
-  </div>
-
-  <!-- controls: one row above the charts -->
-  <div class="controls" role="toolbar" aria-label="Map controls">
-    <div class="control-group">
-      <span class="control-label" id="layer-label">Map shows</span>
-      <div class="seg" id="layer-seg" role="radiogroup" aria-labelledby="layer-label">
-        <button type="button" role="radio" data-layer="ndvi" aria-checked="true">Greenness change</button>
-        <button type="button" role="radio" data-layer="lst" aria-checked="false">Temperature change</button>
-        <button type="button" role="radio" data-layer="cleared" aria-checked="false">Year cleared</button>
-      </div>
-    </div>
-    <div class="control-group">
-      <span class="control-label" id="area-label">Area</span>
-      <div class="chips" id="preset-chips" role="group" aria-labelledby="area-label">
-        <button type="button" data-preset="all">Whole map</button>
-        <button type="button" data-preset="rondonia"><i class="sw" style="--c:var(--c-rondonia)"></i>Rondônia</button>
-        <button type="button" data-preset="para"><i class="sw" style="--c:var(--c-para)"></i>Pará (BR-163)</button>
-        <button type="button" data-preset="matogrosso"><i class="sw" style="--c:var(--c-matogrosso)"></i>N. Mato Grosso</button>
-        <button type="button" data-preset="control"><i class="sw" style="--c:var(--c-control)"></i>Intact forest</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="explorer-grid">
-    <!-- MAP -->
-    <div class="card map-card">
-      <div class="card-head">
-        <h3 id="map-title">Change in dry-season greenness</h3>
-        <p class="card-sub" id="map-sub"></p>
-      </div>
-      <div class="map-wrap" id="map-wrap">
-        <canvas id="map-canvas" width="600" height="400" aria-hidden="true"></canvas>
-        <svg id="map-svg" viewBox="0 0 600 400" preserveAspectRatio="none" role="img" aria-label="Map of the southern Amazon. Drag to select an area."></svg>
-        <div class="map-hint" id="map-hint">Drag on the map to pick any area · hover a square for its history</div>
-      </div>
-      <div class="map-foot">
-        <div id="map-legend" class="legend"></div>
-        <div class="timeline">
-          <button id="play-btn" class="btn btn-play" type="button" aria-label="Play through the years">▶</button>
-          <span class="year-label" id="year-range-label">2020–22</span>
-          <div class="timeline-main">
-            <p class="timeline-caption" id="timeline-caption">Land newly cleared each year in the selected area. Drag, click, or use the ← → keys.</p>
-            <svg id="timeline" viewBox="0 0 560 62" role="slider" tabindex="0" aria-label="Year" aria-valuemin="2001" aria-valuemax="2022" aria-valuenow="2022"></svg>
-          </div>
+      <div class="control">
+        <span class="control-label" id="layer-label">Show</span>
+        <div class="btn-group" id="layer-seg" role="radiogroup" aria-labelledby="layer-label">
+          <button type="button" role="radio" data-layer="ndvi" aria-checked="true">Greenness</button>
+          <button type="button" role="radio" data-layer="lst" aria-checked="false">Temperature</button>
         </div>
       </div>
-    </div>
+      <div class="control">
+        <span class="control-label" id="area-label">Region</span>
+        <div class="btn-group" id="preset-chips" role="group" aria-labelledby="area-label">
+          <button type="button" data-preset="all">Whole map</button>
+          <button type="button" data-preset="rondonia">Rondônia</button>
+          <button type="button" data-preset="para">Pará</button>
+          <button type="button" data-preset="matogrosso">Mato Grosso</button>
+          <button type="button" data-preset="control">Intact forest</button>
+        </div>
+      </div>
 
-    <!-- RIGHT COLUMN -->
-    <div class="side">
-      <div class="card readout-card" aria-live="polite">
-        <div class="readout-area" id="readout-area">Rondônia</div>
-        <div class="readout-num" id="readout-num">+3.8 °C</div>
+      <div class="readout" aria-live="polite">
+        <div class="readout-area" id="readout-area">Whole map</div>
+        <div class="readout-num" id="readout-num"></div>
         <p class="readout-text" id="readout-text"></p>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Less green → hotter?</h3>
-          <p class="card-sub">Every 5 km square in the selected area, by its greenness change (x) and temperature change (y). <b>Drag a box</b> to light those squares up on the map.</p>
-        </div>
-        <div id="scatter" class="chart"></div>
-        <div class="scatter-legend" id="scatter-legend"></div>
-      </div>
+      <div id="map-legend" class="legend"></div>
+    </aside>
 
-      <div class="card">
-        <div class="card-head">
-          <h3>Cleared land runs hot, year after year</h3>
-          <p class="card-sub">Average temperature change of cleared vs. stable squares in the selected area. The solid red line starts once at least 20 squares count as cleared (dotted: 5–19, too few to trust). Below: how much of the area has been cleared. Click a year to jump there.</p>
+    <div class="map-col">
+      <div class="map-wrap" id="map-wrap">
+        <div class="map-zoom" id="map-zoom">
+          <canvas id="map-canvas" width="600" height="400" aria-hidden="true"></canvas>
+          <svg id="map-svg" viewBox="0 0 600 400" preserveAspectRatio="none" role="img" aria-label="Map of the southern Amazon. Hover for local values."></svg>
         </div>
-        <div id="ts" class="chart"></div>
-        <div id="ts-area" class="chart chart-small"></div>
+        <div class="map-hint" id="map-hint">Hover the map for local values</div>
+      </div>
+      <div class="year-row">
+        <button id="play-btn" class="play-btn" type="button" aria-label="Play through the years">▶</button>
+        <label class="year-label" for="year-slider" id="year-range-label">2020–22</label>
+        <input type="range" id="year-slider" min="2001" max="2022" step="1" value="2022" aria-label="Year">
       </div>
     </div>
   </div>
 
-  <!-- tooltip -->
   <div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+</section>
 
-  <!-- tour card -->
-  <div id="tour" class="tour" hidden role="dialog" aria-live="polite" aria-label="Guided tour">
-    <div class="tour-step" id="tour-step-label"></div>
-    <h4 id="tour-title"></h4>
-    <p id="tour-text"></p>
-    <div class="tour-nav">
-      <button type="button" class="btn btn-ghost" id="tour-exit">Exit</button>
-      <div class="tour-dots" id="tour-dots"></div>
-      <button type="button" class="btn btn-ghost" id="tour-back">Back</button>
-      <button type="button" class="btn btn-accent" id="tour-next">Next</button>
-    </div>
-  </div>
+<!-- ============================== BACKGROUND ============================== -->
+<section class="intro prose">
+  <h2>Why would clearing heat the ground?</h2>
+  <p>A rainforest works like an evaporative cooler. Trees pull water from the soil and breathe it out through their leaves, and that evaporation carries heat away from the ground. Pasture and cropland move much less water, so more of the sun's energy goes into heating the surface.</p>
+  <p>NASA's MODIS instrument on the Terra satellite has measured both sides of this since 2000: how <em>green</em> the land is (<abbr title="Normalized Difference Vegetation Index">NDVI</abbr>) and how <em>hot</em> the land surface is at about 10:30 am local time (land surface temperature, LST). On the map, each 5 km square carries both numbers for every dry season from 2001 to 2022.</p>
 </section>
 
 <!-- ============================== METHODS ============================== -->
@@ -155,18 +89,18 @@
     <li><b>Grid.</b> 75°W–45°W, 18°S–2°N, cut into 0.05° squares (about 5.5 km). A square's NDVI is the mean of the ~25 one-km pixels inside it.</li>
     <li><b>Dry season.</b> One value per square per year: the median of the July, August and September composites. The dry season has the fewest clouds, and it is when pasture and forest differ most.</li>
     <li><b>Change.</b> Each year minus that square's own 2001–2003 average. The map and charts show a <b>3-year average ending in the selected year</b>, which smooths out single drought years (2005, 2010, 2015–16).</li>
-    <li><b>Cleared / stable.</b> A square counts as <span class="tag tag-cleared">cleared</span> when its greenness fell more than 0.20 below baseline, and <span class="tag tag-stable">stable</span> when it moved less than 0.05 either way. On the "Year cleared" map, a square is cleared in the first year (2004 or later) its NDVI dropped 0.20 below baseline and stayed there for 3 years.</li>
+    <li><b>Cleared / stable.</b> A square counts as <span class="tag tag-cleared">cleared</span> when its greenness fell more than 0.20 below baseline, and <span class="tag tag-stable">stable</span> when it moved less than 0.05 either way.</li>
     <li><b>Clearing effect.</b> Average temperature change of cleared squares minus that of stable squares <em>in the same area</em>. Regional warming and drought hit both groups, so subtracting cancels them out and leaves what clearing added.</li>
     <li><b>Why stop at 2022.</b> Terra's orbit has been drifting since 2022, so it now passes over earlier in the morning, when the ground is cooler. Untouched forest in our control box "cooled" by 1–2 °C in 2025–26 for that reason alone, so later years would mislead.</li>
   </ol>
   <p class="caveat"><b>Limits.</b> 5 km squares blur small clearings, so cleared area here is a lower bound. A drop in NDVI can also come from fire or drought (the 3-year persistence rule and the stable-square comparison limit this but can't remove it). LST is a skin temperature at one time of day, not air temperature.</p>
-  <p class="links"><a href="writeup.html">Write-up: design rationale &amp; development process →</a> · <a href="https://github.com/silasjude/dsc106_project3/tree/final-submission">Source code on GitHub</a></p>
+  <p class="links"><a href="writeup.html">Write-up: design rationale &amp; development process →</a> · <a href="https://github.com/silasjude/dsc106_project3">Source code on GitHub</a></p>
 </section>
 </main>
 
 <footer class="foot">
   <p>Team 11 · Silas Jude, Ethan Lam, McAllister Blair, Rami Abukhater · DSC 106, UC San Diego, Fall 2026</p>
-  <p class="muted">Data: NASA EOSDIS GIBS — MODIS_Terra_L3_NDVI_Monthly, MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day, MODIS_Terra_CorrectedReflectance_TrueColor. Borders: Natural Earth. Built with D3.js.</p>
+  <p class="muted">Data: NASA EOSDIS GIBS — MODIS_Terra_L3_NDVI_Monthly, MODIS_Terra_L3_Land_Surface_Temp_Monthly_Day. Borders: Natural Earth. Built with D3.js.</p>
 </footer>
 
 <script src="js/d3.v7.min.js"></script>
