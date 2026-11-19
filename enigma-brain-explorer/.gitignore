@@ -1,0 +1,4 @@
+build/out/
+ENIGMA/
+__pycache__/
+.DS_Store
